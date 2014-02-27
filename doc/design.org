@@ -1,0 +1,41 @@
+* firstrl Desing doc
+
+** Gameplay
+
+http://en.wikipedia.org/wiki/NetHack
+
+*** Player
+
+permadeath
+
+**** race
+**** role
+|-----------+---|
+| Role      |   |
+|-----------+---|
+| knight    |   |
+| barbarian |   |
+| wizard    |   |
+| rogue     |   |
+| priest    |   |
+| monk      |   |
+| caveman   |   |
+  
+**** gender
+**** alignment
+| align | deity |
+|-------+-------|
+|       |       |
+
+*** Levels
+
+*** Items, tools
+
+**** weapons
+**** armor
+**** scrolls
+**** potions
+**** tools
+
+blessed, cursed
+
