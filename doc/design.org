@@ -1,4 +1,4 @@
-* firstrl Desing doc
+* firstrl Design doc
 
 ** Gameplay
 

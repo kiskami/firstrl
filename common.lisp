@@ -22,17 +22,19 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 Contact: Kalman Kiss <kiskami@freemail.hu>
 Source code is at <tba>")
 
-(defconstant +WINDOW-W+ 80 "Game window width in characters (tiles)")
-(defconstant +WINDOW-H+ 60 "Game window height in characters (tiles)")
-(defconstant +TILESIZE+ 10)
+(defconstant +NORMAL-FONT-SIZE+ 12)
+(defconstant +SMALL-FONT-SIZE+ 10)
+(defconstant +BIG-FONT-SIZE+ 16)
+
+(defconstant +TILESIZE+ +NORMAL-FONT-SIZE+)
+(defconstant +WINDOW-W+ 66 "Game window width in characters (tiles)")
+(defconstant +WINDOW-H+ 50 "Game window height in characters (tiles)")
 
 (defparameter +BLACK-COLOR+ sdl:*black*)
 (defparameter +WHITE-COLOR+ sdl:*white*)
 (defparameter +DEFCOLOR+ +WHITE-COLOR+)
 
 (defvar *RNDSTATE* (make-random-state t))
-
-(defvar *FONTMAP* nil "Fonts used by this game, intialized in console.")
 
 (defstruct player
   name

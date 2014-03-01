@@ -38,7 +38,7 @@
 (defun do-intro (console)
   "Display intro and wait for key to proceed to chargen."
   (clear-console console)
-  (display-text console 10 10 20 50 +INTRO-TEXT+ 'center)
+  (display-text-wrapped console 13 15 40 10 +INTRO-TEXT+)
   (update-console console)
   (wait-for-keypress +key-space+ console)
   (clear-console console)

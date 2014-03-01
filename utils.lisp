@@ -2,12 +2,6 @@
 
 (in-package #:firstrl)
 
-(defun get-font (key)
-  (let ((ent (assoc key *FONTMAP*)))
-    (if (not (null ent))
-	(rest ent)
-	(error "Fontdef not found."))))
-
 (defun split-by-white-space (string)
     "Returns a list of substrings of string
 divided by ONE space each.
