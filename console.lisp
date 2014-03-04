@@ -4,6 +4,11 @@
 
 (defconstant +key-space+ :SDL-KEY-SPACE)
 (defconstant +key-q+ :SDL-KEY-Q)
+(defconstant +key-h+ :SDL-KEY-H)
+(defconstant +key-i+ :SDL-KEY-I)
+(defconstant +key-k+ :SDL-KEY-K)
+(defconstant +key-j+ :SDL-KEY-J)
+(defconstant +key-l+ :SDL-KEY-L)
 
 (defvar *FONTMAP* nil "Fonts used by this game.")
 
@@ -91,7 +96,7 @@
 	 (font-line-skip (sdl:get-font-line-skip :font f))
 	 (liney (* y font-line-skip)))
     (labels ((dt (x y tx fo s) (display-text x y tx :font fo :surf s)))
-     (dolist (word (split-by-white-space text))
+     (dolist (word (split-by text))
        (cond ((> (sdl:get-font-size (format nil "~A ~A" line word) :size :W :font f) (* w +TILESIZE+))
 	      ;; sor kiírása
 ;	     (format t "display text: x:~A liney:~A line:~A~%" (* x +TILESIZE+) liney line)

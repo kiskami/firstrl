@@ -35,21 +35,3 @@ Source code is at <tba>")
 (defparameter +DEFCOLOR+ +WHITE-COLOR+)
 
 (defvar *RNDSTATE* (make-random-state t))
-
-(defstruct player
-  name
-  gender
-  role
-  alignment
-  deity
-  inventory
-  armor
-  weapons
-  tools
-  hp)
-
-(defstruct dungeon
-  player
-  levels
-
-  )

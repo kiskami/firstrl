@@ -17,7 +17,8 @@
 		    (let ((player (do-chargen console)))
 		     (setf dungeon (make-dungeon
 				    :player player
-				    :levels (gen-levels player))))
+				    :levels (gen-levels player)
+				    :turns 0)))
 		    'indungeon)
 		   ('indungeon
 		    (format t "in dungeon...~%")
@@ -47,30 +48,80 @@
 
 (defun do-chargen (console)
   (make-player 
-   :name "name"
+   :name "teszt player"
    :gender 'm
-   :role 'monk
+   :role 'knight
    :alignment 'chaothic-good
    :deity 'zumba
-   :inventory nil
-   :armor nil
-   :weapons nil
-   :tools nil
-   :hp 100))
+   :inventory '()
+   :armor '()
+   :weapons '()
+   :tools '()
+   :hp 100 :maxhp 100
+   :aktlevel 0))
 
 (defun gen-levels (player)
-  nil)
+  (list (convert-test-level "test level" +TESTLEVEL+)))
 
 (defun do-update-dungeon (console dungeon)
   (let ((key (wait-for-any-key console)))
+    (clear-console console)
+    (update-console console)
     (cond ((key-eq key +key-q+)
 	   'end)
-	  (t
+	  ((key-eq key +key-space+)
 	   (format t "*")
+	   (make-turn dungeon)
+	   'indungeon)
+	  ((key-eq key +key-h+)
+	   (format t "help~%")
+	   (display-help console)
 	   'indungeon))))
+
+(defun make-turn (dungeon)
+  (incf (dungeon-turns dungeon))
+  (draw-level (nth (player-aktlevel (dungeon-player dungeon)) 
+		   (dungeon-levels dungeon))))
+
+(defun display-help (console))
 
 (defun do-death (console dungeon)
   'end)
 
 (defun do-win (console dungeon)
   'end)
+
+(defun draw-level (level))
+
+(defun convert-test-level (name str)
+  "Convert character string level representation to data structs."
+  (let ((lines (split-by str #\Newline))
+	 (maxlength 0))
+    (dolist (l lines)
+      (when (< maxlength (length l)) (setf maxlength (length l))))
+    (let ((map_ (make-array (list maxlength (length lines)) :element-type 'character
+			   :initial-element #\Space))
+	  (monsters ()) (items ())
+	  (x 0) (y 0))
+      (dolist (l lines)
+	(map nil #'(lambda (c)
+		     (let ((monsta (find-monster-data (string c) :getter get-monster-char))
+			   (item (find-item-data (string c) :getter get-item-char))
+			   (feature (find-dungeonfeature-data (string c) :getter get-dungeonfeature-char)))
+		       (cond (monsta
+			      (format t "monsta ~A at ~A,~A~%" c x y)
+			      (pushnew (make-player :name "monsta" :typeid (funcall get-monster-typeid monsta)) monsters)
+			      (setf (aref map_ x y) #\.))
+			     (item
+			      (format t "item ~A at ~A,~A~%" c x y)
+			      (pushnew (make-player :name "item" :typeid (funcall get-item-typeid item)) items)
+			      (setf (aref map_ x y) #\.))
+			     (feature
+			      (format t "feature ~A at ~A,~A~%" c x y)
+			     (setf (aref map_ x y) c))))
+		     (incf x))
+	     l)
+	(incf y) (setf x 0))
+      (make-level :name name :parents nil :childs nil
+		  :monsters monsters :items items
+		  :map map_))))
