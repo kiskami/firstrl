@@ -1,4 +1,24 @@
 ;;;; firstrl.lisp
+;; Copyright (c) 2014 Kalman Kiss, Zalaegerszeg Hungary
+;;
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 2 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program; if not, write to the Free Software
+;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+;;
+;; Author and contact:
+;; Kalman Kiss <kiskami@freemail.hu>
+;; 8900 Zalaegerszeg, Hungary
+;; Kakukkfu u. 4.
 
 (in-package #:firstrl)
 
@@ -18,7 +38,8 @@
 		     (setf dungeon (make-dungeon
 				    :player player
 				    :levels (gen-levels player)
-				    :turns 0)))
+				    :turns 0))
+		     (spawn-player player dungeon))
 		    'indungeon)
 		   ('indungeon
 		    (format t "in dungeon...~%")
@@ -47,7 +68,8 @@
   'chargen)
 
 (defun do-chargen (console)
-  (make-player 
+  "Player character generation."
+  (make-lifeform 
    :name "teszt player"
    :gender 'm
    :role 'knight
@@ -61,7 +83,18 @@
    :aktlevel 0))
 
 (defun gen-levels (player)
+  "Generate dungeon levels for player."
   (list (convert-test-level "test level" +TESTLEVEL+)))
+
+(defun get-player-level (dungeon)
+  (nth (lifeform-aktlevel (dungeon-player dungeon)) (dungeon-levels dungeon)))
+
+(defun spawn-player (player dungeon)
+  "Place player on the first level in dungeon by the ladder upwards (entry)."
+  (setf (lifeform-aktlevel player) 0)
+  (let ((upladders (find-dungeonfeatures-in-level (get-player-level dungeon) ">")))
+    (setf (lifeform-x player) (object-x (first upladders)))
+    (setf (lifeform-y player) (object-y (first upladders)))))
 
 (defun do-update-dungeon (console dungeon)
   (let ((key (wait-for-any-key console)))
@@ -71,17 +104,23 @@
 	   'end)
 	  ((key-eq key +key-space+)
 	   (format t "*")
-	   (make-turn dungeon)
+	   (player-idle-turn console dungeon)
+	   (update-console console)
 	   'indungeon)
 	  ((key-eq key +key-h+)
 	   (format t "help~%")
 	   (display-help console)
 	   'indungeon))))
 
-(defun make-turn (dungeon)
+(defun player-idle-turn (console dungeon)
   (incf (dungeon-turns dungeon))
-  (draw-level (nth (player-aktlevel (dungeon-player dungeon)) 
-		   (dungeon-levels dungeon))))
+  (let ((player (dungeon-player dungeon))
+	(level (get-player-level dungeon)))
+   (update-idle-player player)
+   (update-level level)
+   (draw-level console level)
+   (draw-player console player))
+  )
 
 (defun display-help (console))
 
@@ -91,37 +130,19 @@
 (defun do-win (console dungeon)
   'end)
 
-(defun draw-level (level))
+(defun update-idle-player (player))
 
-(defun convert-test-level (name str)
-  "Convert character string level representation to data structs."
-  (let ((lines (split-by str #\Newline))
-	 (maxlength 0))
-    (dolist (l lines)
-      (when (< maxlength (length l)) (setf maxlength (length l))))
-    (let ((map_ (make-array (list maxlength (length lines)) :element-type 'character
-			   :initial-element #\Space))
-	  (monsters ()) (items ())
-	  (x 0) (y 0))
-      (dolist (l lines)
-	(map nil #'(lambda (c)
-		     (let ((monsta (find-monster-data (string c) :getter get-monster-char))
-			   (item (find-item-data (string c) :getter get-item-char))
-			   (feature (find-dungeonfeature-data (string c) :getter get-dungeonfeature-char)))
-		       (cond (monsta
-			      (format t "monsta ~A at ~A,~A~%" c x y)
-			      (pushnew (make-player :name "monsta" :typeid (funcall get-monster-typeid monsta)) monsters)
-			      (setf (aref map_ x y) #\.))
-			     (item
-			      (format t "item ~A at ~A,~A~%" c x y)
-			      (pushnew (make-player :name "item" :typeid (funcall get-item-typeid item)) items)
-			      (setf (aref map_ x y) #\.))
-			     (feature
-			      (format t "feature ~A at ~A,~A~%" c x y)
-			     (setf (aref map_ x y) c))))
-		     (incf x))
-	     l)
-	(incf y) (setf x 0))
-      (make-level :name name :parents nil :childs nil
-		  :monsters monsters :items items
-		  :map map_))))
+(defun update-level (level))
+
+(defun draw-level (console level)
+  (draw-map console (level-map level))
+  (draw-items console (level-items level))
+  (draw-monsters console (level-monsters level)))
+
+(defun draw-map (console map))
+
+(defun draw-items (console items))
+
+(defun draw-monsters (console monstas))
+
+(defun draw-player (console player))

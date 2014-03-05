@@ -1,4 +1,24 @@
 ;;; data.lisp
+;; Copyright (c) 2014 Kalman Kiss, Zalaegerszeg Hungary
+;;
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 2 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program; if not, write to the Free Software
+;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+;;
+;; Author and contact:
+;; Kalman Kiss <kiskami@freemail.hu>
+;; 8900 Zalaegerszeg, Hungary
+;; Kakukkfu u. 4.
 
 (in-package #:firstrl)
 
@@ -14,7 +34,7 @@ of never ending pain and suffer. Heheheheeee...
 			  ("s" "sp" "spider") ("s" "sc" "centipede") ("s" "ss" "scorpion")
 			  ("w" "w" "worm")
 			  ("B" "B" "bat")
-		  ("k" "k" "kobold")
+			  ("k" "k" "kobold")
 			  ("o" "o" "orc")
 			  ("h" "h" "humanoid")
 			  ("G" "G" "gnome")
@@ -40,7 +60,8 @@ of never ending pain and suffer. Heheheheeee...
 		       ("$" "$" "coins")
 		       ("%" "%" "comestible")))
 
-(defconstant +DUNGEONFEATURES+ '((">" ">" "ladder up") ("<" "<" "ladder down")
+(defconstant +DUNGEONFEATURES+ '((">" ">" "ladder up") 
+				 ("<" "<" "ladder down")
 				 ("_" "_" "altar")
 				 ("{" "{" "fountain")
 				 ("^" "^" "trap")
@@ -51,9 +72,15 @@ of never ending pain and suffer. Heheheheeee...
 				 ("#" "#" "corridor")
 				 ("\\" "\\" "throne")))
 
-(defstruct player
+(defstruct object
   name
   typeid
+  aktlevel
+  x y
+  state
+  thinkfunc)
+
+(defstruct (lifeform (:include object))
   gender
   role
   deity
@@ -72,17 +99,14 @@ of never ending pain and suffer. Heheheheeee...
   wis maxwis
   cha maxcha 				; charisma
   purse
-  inventory
-  
-  aktlevel
-  x y
-  )
+  inventory)
 
 (defstruct level
   name
   parents childs
   monsters
   items
+  features
   map
   )
 
@@ -109,19 +133,3 @@ of never ending pain and suffer. Heheheheeee...
                                        .....................
 
 ")
-
-(defparameter get-monster-char #'first)
-(defparameter get-monster-typeid #'second)
-(defparameter get-item-char #'first)
-(defparameter get-item-typeid #'second)
-(defparameter get-dungeonfeature-char #'first)
-(defparameter get-dungeonfeature-typeid #'second)
-
-(defun find-monster-data (id &key (getter get-monster-typeid))
-  (find-if #'(lambda (r) (equal id r)) +MONSTERS+ :key getter))
-
-(defun find-item-data (id &key (getter get-item-typeid))
-  (find-if #'(lambda (r) (equal id r)) +ITEMS+ :key getter))
-
-(defun find-dungeonfeature-data (id &key (getter get-dungeonfeature-typeid))
-  (find-if #'(lambda (r) (equal id r)) +DUNGEONFEATURES+ :key getter))
