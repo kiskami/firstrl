@@ -23,54 +23,76 @@
 (in-package #:firstrl)
 
 (defconstant +INTRO-TEXT+ "INTRO
-Heheheheeee... You came into my humble home, bold adventurer?
-You search for treasure? You hope to get out alive? No no no no... My minions are waiting
-for you. You'll die surely. Come, come! Find me, and I'll give you a present... A present
-of never ending pain and suffer. Heheheheeee...
+Heheheheeee... You came into my humble home, bold adventurer? You search for treasure? You hope to get out alive? No no no no... My minions are waiting for you. You'll die surely. Come, come! Find me, and I'll give you a present... A present of never ending pain and suffer. Heheheheeee... 
 [Press SPACE to continue]")
 
+(defstruct basicdata
+  char typeid
+  name
+  font
+  desc)
+
+(defstruct (monsterdata (:include basicdata)))
+
 ;;; record structure: (character typeid name)
-(defconstant +MONSTERS+ '(("r" "rr" "rat") ("r" "rm" "mole")
-			  ("s" "sp" "spider") ("s" "sc" "centipede") ("s" "ss" "scorpion")
-			  ("w" "w" "worm")
-			  ("B" "B" "bat")
-			  ("k" "k" "kobold")
-			  ("o" "o" "orc")
-			  ("h" "h" "humanoid")
-			  ("G" "G" "gnome")
-			  ("M" "M" "mummy")
-			  ("O" "O" "ogre")
-			  ("T" "T" "troll")
-			  ("S" "S" "snake")
-			  ("Z" "Z" "zombie")
-			  ("@" "@" "human")
-			  ("&" "&" "daemon")))
+(defconstant +MONSTERSDATA+ 
+  '((:char "r" :typeid "rr" :name "rat" :font 'sans :desc "") 
+    (:char "r" :typeid "rm" :name "mole" :font 'sans :desc "")
+    (:char "s" :typeid "sp" :name "spider" :font 'sans :desc "") 
+    (:char "s" :typeid "sc" :name "centipede" :font 'sans :desc "") 
+    (:char "s" :typeid "ss" :name "scorpion" :font 'sans :desc "")
+    (:char "w" :typeid "w" :name "worm" :font 'sans :desc "")
+    (:char "B" :typeid "B" :name "bat" :font 'sans :desc "")
+    (:char "k" :typeid "k" :name "kobold" :font 'sans :desc "")
+    (:char "o" :typeid "o" :name "orc" :font 'sans :desc "")
+    (:char "h" :typeid "h" :name "humanoid" :font 'sans :desc "")
+    (:char "G" :typeid "G" :name "gnome" :font 'sans :desc "")
+    (:char "M" :typeid "M" :name "mummy" :font 'sans :desc "")
+    (:char "O" :typeid "O" :name "ogre" :font 'sans :desc "")
+    (:char "T" :typeid "T" :name "troll" :font 'sans :desc "")
+    (:char "S" :typeid "S" :name "snake" :font 'sans :desc "")
+    (:char "Z" :typeid "Z" :name "zombie" :font 'sans :desc "")
+    (:char "@" :typeid "@*" :name "human" :font 'sans :desc "")
+    (:char "&" :typeid "&" :name "daemon" :font 'sans-bold :desc "")))
 
-(defconstant +ALIGNMENTS+ '(('lawful) ('neutral) ('chaotic)))
+(defconstant +ALIGNMENTSDATA+ '((:id 'lawful :desc "") 
+				 (:id 'neutral :desc "") 
+				 (:id 'chaotic :desc "")))
 
-(defconstant +ITEMS+ '(("\"" "\"" "amulet") 
-		       (")" ")" "weapon")
-		       ("[" "]" "armor")
-		       ("!" "!" "potion")
-		       ("?" "?" "scroll")
-		       ("/" "/" "wand")
-		       ("=" "=" "ring")
-		       ("*" "*" "gem")
-		       ("(" "(" "statue")
-		       ("$" "$" "coins")
-		       ("%" "%" "comestible")))
+(defstruct (itemdata (:include basicdata)))
 
-(defconstant +DUNGEONFEATURES+ '((">" ">" "ladder up") 
-				 ("<" "<" "ladder down")
-				 ("_" "_" "altar")
-				 ("{" "{" "fountain")
-				 ("^" "^" "trap")
-				 ("+" "+" "closed door")
-				 ("-" "-" "open door")
-				 ("|" "|" "open door")
-				 ("." "." "floor")
-				 ("#" "#" "corridor")
-				 ("\\" "\\" "throne")))
+(defconstant +ITEMSDATA+ 
+  '((:char "\"" :typeid "\"" :name "amulet" :font 'sans :desc "") 
+    (:char ")" :typeid ")" :name "weapon" :font 'sans :desc "")
+    (:char "[" :typeid "[" :name "armor" :font 'sans :desc "")
+    (:char "!" :typeid "!" :name "potion" :font 'sans :desc "")
+    (:char "?" :typeid "?" :name "scroll" :font 'sans :desc "")
+    (:char "/" :typeid "/" :name "wand" :font 'sans :desc "")
+    (:char "=" :typeid "=" :name "ring" :font 'sans :desc "")
+    (:char "*" :typeid "*" :name "gem" :font 'sans :desc "")
+    (:char "(" :typeid "(" :name "statue" :font 'sans :desc "")
+    (:char "$" :typeid "$" :name "coins" :font 'sans :desc "")
+    (:char "%" :typeid "%" :name "comestible" :font 'sans :desc "")))
+
+(defstruct (dungeonfeaturedata (:include basicdata)))
+
+(defconstant +DUNGEONFEATURESDATA+ 
+  '((:char ">" :typeid ">" :name "ladder up" :font 'sans :desc "") 
+    (:char "<" :typeid "<" :name "ladder down" :font 'sans :desc "")
+    (:char "_" :typeid "_" :name "altar" :font 'sans :desc "")
+    (:char "{" :typeid "{" :name "fountain" :font 'sans :desc "")
+    (:char "^" :typeid "^" :name "trap" :font 'sans :desc "")
+    (:char "+" :typeid "+" :name "closed door" :font 'sans :desc "")
+    (:char "-" :typeid "-" :name "open door" :font 'sans :desc "")
+    (:char "|" :typeid "|" :name "open door" :font 'sans :desc "")
+    (:char "." :typeid "." :name "floor" :font 'sans :desc "")
+    (:char "#" :typeid "#" :name "wall" :font 'sans :desc "")
+    (:char "\\" :typeid "\\" :name "throne" :font 'sans :desc "")))
+
+(defstruct (playerdata (:include basicdata)))
+
+(defconstant +PLAYERDATA+ 
+  '(:char "@" :typeid "@" :name "player" :font 'sans :desc ""))
 
 (defstruct object
   name
@@ -115,21 +137,30 @@ of never ending pain and suffer. Heheheheeee...
   levels
   turns)
 
+;-------------------------------------------------------------------------------|
 (defconstant +TESTLEVEL+
-"
-                  .............
-........          .............
-..>.....     #####+.......\"....
-.)...].+######    .%..!....$...
-........   #      ...........+.
-           #                 #
-           #                 #
-           #         # # # # #
-      .... #         #       #         .....................
-      .{.+##         #       ######### +...=..........._....
-      ....           #                 .....................
-                                       ................\\.*.
-                                       ............../...<..
-                                       .....................
-
-")
+"                          ###############
+##########                #.............#                          ############
+#........#              ###.............#                    #######.....)....#
+#..>.....################.+.......\".....#                    #.....+..........#
+#.)...[..+...............##.%..!....$...#                    #.#####.......$..#
+#........###.############ #.............#                    #.#   ############
+########## #.#            ############+##                    #.#
+           #.#                       #.#                     #.#
+     #######.#              ##########.#   ###################+###
+     #....##.#              #..........# ###.....................#
+     #.{..+..#              #.########## #.+...=..........._.....#
+     #....####              #.#          #.#.....................#
+     ######                 #.############.#................\\.*..#
+                            #..............#............../...<..#
+                            ###+############.....................#
+                              #.#          #######################
+                              #.#
+                              #.#
+                              #.#
+       ##############         #.#
+       #.$..........###########.#
+       #............+...........#
+       #............#############
+       #......%.....#
+       ##############")

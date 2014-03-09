@@ -1,0 +1,75 @@
+* firstrl milestones file
+
+** Todos
+
+*** Core framework
+**** DONE sdl-builder integration
+**** DONE main loop
+**** DONE basic console input, output
+**** TODO Level display
+**** TODO Player stat display
+**** TODO Messages display
+
+*** Game data
+**** TODO dungeon features data
+**** TODO player data
+**** TODO items data
+**** TODO monsters data
+**** DONE test level
+**** TODO design levels
+***** TODO design not random generated levels
+**** spells?
+
+*** Game logic
+**** TODO Player character generation
+**** TODO Dungeon generation
+**** Player
+***** TODO movement
+***** TODO colldet
+***** TODO fight
+****** TODO meele
+****** TODO ranged
+******* TODO throw
+***** TODO inventory
+****** TODO pickup, drop
+****** TODO wearing, using, take off
+****** TODO throw
+***** TODO eating, drinking
+****** TODO hp regen
+***** shop?
+***** TODO game win
+***** TODO death
+***** magic?
+**** Dungeon features
+***** TODO spawning on levels
+***** TODO function and use by player
+***** TODO function and use by monsters
+**** Monsters
+***** TODO spawning on levels
+***** TODO ai
+***** TODO movement
+***** TODO colldet
+***** TODO fight
+***** TODO inventory
+**** Items
+***** TODO spawning on levels
+***** TODO function and use by player
+***** TODO function and use by monsters
+***** TODO effects on player
+***** TODO effects on monsters
+***** TODO effects on other items
+
+*** Release
+**** TODO README update
+**** DONE License file and notice in source files
+**** Build
+***** TODO Windows build
+***** (Slackware) Linux build?
+**** Testing
+***** TODO bughunt
+***** TODO game balance
+**** TODO Packaging, release
+***** src push to code.google
+***** build -> zip
+***** upload to distributing site
+**** TODO Announcement

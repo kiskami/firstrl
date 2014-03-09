@@ -30,7 +30,8 @@
 (defconstant +key-j+ :SDL-KEY-J)
 (defconstant +key-l+ :SDL-KEY-L)
 
-(defvar *FONTMAP* nil "Fonts used by this game.")
+(defparameter *FONTMAP* nil "Fonts used by this game.")
+(defparameter *GLYPCACHE* (make-hash-table :test #'equal) "Prerendered char glyp surfaces.")
 
 (defstruct consoledata
   w h fullscreen resizable
@@ -39,22 +40,22 @@
 (defun init-fonts ()
   (setf *FONTMAP* (list (cons 'sans (sdl:initialise-font (make-instance 'SDL:ttf-font-definition
 									:size +NORMAL-FONT-SIZE+
-									:filename (merge-pathnames "DroidSans.ttf"))))
+									:filename (merge-pathnames "VeraMono.ttf"))))
 			(cons 'sans-small (sdl:initialise-font (make-instance 'SDL:ttf-font-definition
 									      :size +SMALL-FONT-SIZE+
-									      :filename (merge-pathnames "DroidSans.ttf"))))
+									      :filename (merge-pathnames "VeraMono.ttf"))))
 			(cons 'sans-big (sdl:initialise-font (make-instance 'SDL:ttf-font-definition
 									      :size +BIG-FONT-SIZE+
-									      :filename (merge-pathnames "DroidSans.ttf"))))
+									      :filename (merge-pathnames "VeraMono.ttf"))))
 			(cons 'sans-bold (sdl:initialise-font (make-instance 'SDL:ttf-font-definition
 									     :size +NORMAL-FONT-SIZE+
-									     :filename (merge-pathnames "DroidSans-Bold.ttf"))))
-			(cons 'serif (sdl:initialise-font (make-instance 'SDL:ttf-font-definition
-									 :size +NORMAL-FONT-SIZE+
-									 :filename (merge-pathnames "DroidSerif-Regular.ttf"))))
-			(cons 'serif-bold (sdl:initialise-font (make-instance 'SDL:ttf-font-definition
-									      :size +NORMAL-FONT-SIZE+
-									      :filename (merge-pathnames "DroidSerif-Bold.ttf")))))))
+									     :filename (merge-pathnames "VeraMono-Bold.ttf")))))))
+
+(defun add-to-glypcache (char surf)
+  (setf (gethash char *GLYPCACHE*) surf))
+
+(defun get-from-glypcache (char)
+  (gethash char *GLYPCACHE*))
 
 (defmacro with-init-console (&rest body)
   (sdl:load-library)
@@ -99,23 +100,45 @@
 
 (defun get-font (key)
   (let ((ent (assoc key *FONTMAP*)))
-    (if (not (null ent))
+    (if ent
 	(rest ent)
 	(error "Fontdef not found."))))
 
-(defun display-text (x y text &key (font 'sans) surf)
-  (sdl:draw-string-solid-* text x y
+(defun cache-char-glyp (char &key (font 'sans) (color +DEFCOLOR+))
+  (let ((f (get-font font)))
+   (add-to-glypcache char (cons (sdl:render-string-blended char :font f :color color) f))))
+
+(defun display-char-glyp (console x y char)
+  (let* ((entry (get-from-glypcache char)) 
+	 (surf (car entry)) 
+	 (font (cdr entry)))
+    (sdl:draw-surface-at-* surf
+			   (* x +TILESIZE+)
+			   (* y (sdl:get-font-line-skip :font font))
+			   :surface (consoledata-windowsurf console))))
+
+(defun display-text-on-surf (x y text &key (font 'sans) surf (color +DEFCOLOR+))
+  (sdl:draw-string-blended-* text x y
   			   :surface surf
-  			   :color +DEFCOLOR+ 
+  			   :color color
   			   :font (get-font font)))
 
-(defun display-text-wrapped (console x y w h text &key (font 'sans))
+(defun display-text (console x y text &key (font 'sans) (color +DEFCOLOR+))
+  (let ((f (get-font font)))
+   (display-text-on-surf (* x +TILESIZE+)
+			 (* y (sdl:get-font-line-skip :font f)) 
+			 text 
+			 :font font 
+			 :surf (consoledata-windowsurf console)
+			 :color color)))
+
+(defun display-text-wrapped (console x y w h text &key (font 'sans) (color +DEFCOLOR+))
   "Display text in the rectangular region [(x,y)(x+w,y+h)] with simple line wrapping."
   (let* ((line "") 
 	 (f (get-font font))
 	 (font-line-skip (sdl:get-font-line-skip :font f))
 	 (liney (* y font-line-skip)))
-    (labels ((dt (x y tx fo s) (display-text x y tx :font fo :surf s)))
+    (labels ((dt (x y tx fo s) (display-text-on-surf x y tx :font fo :surf s :color color)))
      (dolist (word (split-by text))
        (cond ((> (sdl:get-font-size (format nil "~A ~A" line word) :size :W :font f) (* w +TILESIZE+))
 	      ;; sor kiírása

@@ -40,18 +40,24 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 Contact: Kalman Kiss <kiskami@freemail.hu>
-Source code is at <tba>")
+Source code is at https://code.google.com/p/firstrl/")
 
 (defconstant +NORMAL-FONT-SIZE+ 12)
 (defconstant +SMALL-FONT-SIZE+ 10)
 (defconstant +BIG-FONT-SIZE+ 16)
 
 (defconstant +TILESIZE+ +NORMAL-FONT-SIZE+)
-(defconstant +WINDOW-W+ 66 "Game window width in characters (tiles)")
-(defconstant +WINDOW-H+ 50 "Game window height in characters (tiles)")
+(defconstant +WINDOW-W+ 80 "Game window width in characters (tiles)")
+(defconstant +WINDOW-H+ 40 "Game window height in characters (tiles)")
 
 (defparameter +BLACK-COLOR+ sdl:*black*)
 (defparameter +WHITE-COLOR+ sdl:*white*)
+(defparameter +GRAY-COLOR+ (sdl:color :r 170 :g 170 :b 170 :a 1))
 (defparameter +DEFCOLOR+ +WHITE-COLOR+)
 
-(defvar *RNDSTATE* (make-random-state t))
+(defparameter *RNDSTATE* (make-random-state t))
+
+(defparameter *monsterdata* (make-hash-table :test #'equal))
+(defparameter *itemdata* (make-hash-table :test #'equal))
+(defparameter *dungeonfeaturedata* (make-hash-table :test #'equal))
+(defparameter *playerdata* nil)

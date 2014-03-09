@@ -31,24 +31,8 @@ http://cl-cookbook.sourceforge.net/strings.html"
      collect (subseq string i j)
      while j))
 
-(defparameter get-monster-char #'first)
-(defparameter get-monster-typeid #'second)
-(defparameter get-item-char #'first)
-(defparameter get-item-typeid #'second)
-(defparameter get-dungeonfeature-char #'first)
-(defparameter get-dungeonfeature-typeid #'second)
-
-(defun find-monster-data (id &key (getter get-monster-typeid))
-  (find-if #'(lambda (r) (equal id r)) +MONSTERS+ :key getter))
-
-(defun find-item-data (id &key (getter get-item-typeid))
-  (find-if #'(lambda (r) (equal id r)) +ITEMS+ :key getter))
-
-(defun find-dungeonfeature-data (id &key (getter get-dungeonfeature-typeid))
-  (find-if #'(lambda (r) (equal id r)) +DUNGEONFEATURES+ :key getter))
-
 (defun find-dungeonfeatures-in-level (level typeid)
-  (remove-if #'(lambda (f) (equal typeid f)) (level-features level) :key #'object-typeid))
+  (remove-if-not #'(lambda (f) (equal typeid f)) (level-features level) :key #'object-typeid))
 
 (defun convert-test-level (name str)
   "Convert character string level representation to data structs."
@@ -62,30 +46,30 @@ http://cl-cookbook.sourceforge.net/strings.html"
 	  (x 0) (y 0))
       (dolist (l lines)
 	(map nil #'(lambda (c)
-		     (let ((monsta (find-monster-data (string c) :getter get-monster-char))
-			   (item (find-item-data (string c) :getter get-item-char))
-			   (feature (find-dungeonfeature-data (string c) :getter get-dungeonfeature-char)))
+		     (let ((monsta (gethash (string c) *monsterdata*))
+			   (item (gethash (string c) *itemdata*))
+			   (feature (gethash (string c) *dungeonfeaturedata*)))
 		       (cond (monsta
 			      (format t "monsta ~A at ~A,~A~%" c x y)
 			      (pushnew (make-lifeform :name "monsta" 
-						      :typeid (funcall get-monster-typeid monsta) 
+						      :typeid (string c) 
 						      :x x :y y) monsters)
 			      (setf (aref map_ x y) #\.))
 			     (item
 			      (format t "item ~A at ~A,~A~%" c x y)
 			      (pushnew (make-object :name "item" 
-						    :typeid (funcall get-item-typeid item) 
+						    :typeid (string c) 
 						    :x x :y y) items)
 			      (setf (aref map_ x y) #\.))
 			     (feature
 			      (format t "feature ~A at ~A,~A~%" c x y)
 			      (pushnew (make-object :name "feature" 
-						    :typeid (funcall get-dungeonfeature-typeid feature) 
+						    :typeid (string c) 
 						    :x x :y y) features)
-			     (setf (aref map_ x y) c))))
+			      (setf (aref map_ x y) c))))
 		     (incf x))
 	     l)
 	(incf y) (setf x 0))
       (make-level :name name :parents nil :childs nil
-		  :monsters monsters :items items
+		  :monsters monsters :items items :features features
 		  :map map_))))
