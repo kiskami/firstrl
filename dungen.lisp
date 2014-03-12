@@ -25,45 +25,21 @@
 (defconstant +LEVEL_MAXH+ 25)
 (defconstant +CORRIDOR_MAXLEN+ 5 "max corridor length - make a turn/room after this")
 (defconstant +STEPS_DIVIDER+ 1)
+(defconstant +ROOM_CNT+ 5)
 
 (defstruct room
   x y w h
   )
 
-(defun get-leveldata-name (&key name 
-			     (w +WINDOW-W+) (h +LEVEL_MAXH+) 
-			     (roomcount 5) 
-			     minw minh maxw maxh
-			     (parents nil) (childs nil)
-			     )
-  name)
-
-(defun get-leveldata-parents (&key name 
-			     (w +WINDOW-W+) (h +LEVEL_MAXH+) 
-			     (roomcount 5) 
-			     minw minh maxw maxh
-			     (parents nil) (childs nil)
-			     )
-  parents)
-
-(defun get-leveldata-childs (&key name 
-			     (w +WINDOW-W+) (h +LEVEL_MAXH+) 
-			     (roomcount 5) 
-			     minw minh maxw maxh
-			     (parents nil) (childs nil)
-			     )
-  childs)
-
-(defun gen-level* (&key (name "[unnamed]") 
-		     (w +WINDOW-W+) (h +LEVEL_MAXH+) 
-		     (roomcount 5) 
-		     minw minh maxw maxh
-		     (parents nil) (childs nil))
-  (gen-level w h roomcount minw minh maxw maxh))
+(defun gen-level* (leveldata)
+  (gen-level (leveldata-w leveldata) (leveldata-h leveldata) 
+	     +ROOM_CNT+ 
+	     (leveldata-minw leveldata) (leveldata-minh leveldata)
+	     (leveldata-maxw leveldata) (leveldata-maxh leveldata)))
 
 (defun gen-features (leveldata map)
   (let* ((result ())
-	 (parents (apply #'get-leveldata-parents leveldata))
+	 (parents (leveldata-parents leveldata))
 	 (parent-ladder-kords (gen-parent-ladder-kords (length parents) map))
 	 (ladderup (get-dungeonfeaturedata ">"))
 	 (i 0)
@@ -80,14 +56,6 @@
 
 (defun get-dungeonfeaturedata (typeid)
   (gethash typeid *dungeonfeaturedata*))
-
-(defun gen-parent-ladder-kords_ (cnt map)
-  (let ((res nil)
-	(kord nil))
-    (when (> cnt 0)
-      ;; only one parent supported atm
-      )
-    res))
 
 (defun gen-parent-ladder-kords (cnt map)
   (let ((res nil)
@@ -187,7 +155,7 @@ Pseudocode for block aggregation
 			  corrlen 0))))
     	    (t
 	     (cond (roomstart
-		    (format t "roomstart~%")
+;		    (format t "roomstart~%")
 		    (let ((kord (rnd-side-koord room)))
 		      (setf bx (first kord)
 			    by (second kord))
@@ -199,7 +167,7 @@ Pseudocode for block aggregation
 			      movedir (get-rnd-number 1 4))
 			(incf corrlen))))
 		   (t
-		    (format t "corridor start~%")
+;		    (format t "corridor start~%")
 		    ;; (loop do
 		    ;; 	 (setf bx (get-rnd-number 2 (1- maxx))
 		    ;; 	       by (get-rnd-number 2 (1- maxy)))
@@ -220,10 +188,6 @@ Pseudocode for block aggregation
 (defun is-floor (level x y &optional (char #\.))
   (eq char (aref level x y)))
 
-(defparameter dkords '((-1 . -1) (0 . -1) (1 . -1)
-		       (-1 . 0)  (1 . 0)
-		       (-1 . 1)  (0 . 1)  (1 . 1)))
-
 (defun touching-corridor (level x y)
   (dolist (dc dkords)
     (when (is-floor level (+ x (car dc)) (+ y (cdr dc)))
@@ -231,7 +195,7 @@ Pseudocode for block aggregation
   nil)
 
 (defun plot-corridor (level x y)
-  (format t "plot-corridor @ ~A,~A~%" x y)
+ ; (format t "plot-corridor @ ~A,~A~%" x y)
   (setf (aref level x y) #\.)
   (dolist (dc dkords)
     (when (not (is-floor level (+ x (car dc)) (+ y (cdr dc))))
@@ -255,7 +219,7 @@ Pseudocode for block aggregation
        (setf x (room-x room))
        (setf y (get-rnd-number (room-y room) (+ (room-y room) (room-h room) 1)))
        ))
-    (format t "rnd-side-koord (~A,~A)~%" x y)
+ ;   (format t "rnd-side-koord (~A,~A)~%" x y)
     (list x y)
   ))
 
@@ -268,7 +232,7 @@ Pseudocode for block aggregation
 	(y (get-rnd-number miny maxy))
 	(w (get-rnd-number minw maxw))
 	(h (get-rnd-number minh maxh)))
-    (format t "gen-random-room @ (~A,~A) ~Ax~A~%" x y w h)
+ ;   (format t "gen-random-room @ (~A,~A) ~Ax~A~%" x y w h)
     (list x y w h)))
 
 (defun add-room (level x y w h)

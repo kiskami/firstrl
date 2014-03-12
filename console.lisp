@@ -22,13 +22,22 @@
 
 (in-package #:firstrl)
 
-(defconstant +key-space+ :SDL-KEY-SPACE)
-(defconstant +key-q+ :SDL-KEY-Q)
+(defconstant +key-b+ :SDL-KEY-B)
 (defconstant +key-h+ :SDL-KEY-H)
 (defconstant +key-i+ :SDL-KEY-I)
-(defconstant +key-k+ :SDL-KEY-K)
 (defconstant +key-j+ :SDL-KEY-J)
+(defconstant +key-k+ :SDL-KEY-K)
 (defconstant +key-l+ :SDL-KEY-L)
+(defconstant +key-m+ :SDL-KEY-M)
+(defconstant +key-n+ :SDL-KEY-N)
+(defconstant +key-q+ :SDL-KEY-Q)
+(defconstant +key-u+ :SDL-KEY-U)
+(defconstant +key-y+ :SDL-KEY-Y)
+
+(defconstant +key-space+ :SDL-KEY-SPACE)
+(defconstant +key-<+ :SDL-KEY-LESS)
+(defconstant +key->+ :SDL-KEY-GREATER)
+(defconstant +key-.+ :SDL-KEY-PERIOD)
 
 (defparameter *FONTMAP* nil "Fonts used by this game.")
 (defparameter *GLYPCACHE* (make-hash-table :test #'equal) "Prerendered char glyp surfaces.")

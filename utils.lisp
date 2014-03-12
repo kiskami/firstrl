@@ -34,6 +34,9 @@ http://cl-cookbook.sourceforge.net/strings.html"
 (defun find-dungeonfeatures-in-level (level typeid)
   (remove-if-not #'(lambda (f) (equal typeid f)) (level-features level) :key #'object-typeid))
 
+(defun get-player-level (dungeon)
+  (nth (lifeform-aktlevel (dungeon-player dungeon)) (dungeon-levels dungeon)))
+
 (defun convert-test-level (name str)
   "Convert character string level representation to data structs."
   (let ((lines (split-by str #\Newline))

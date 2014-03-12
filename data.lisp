@@ -89,10 +89,13 @@ Heheheheeee... You came into my humble home, bold adventurer? You search for tre
     (:char "#" :typeid "#" :name "wall" :font 'sans :desc "")
     (:char "\\" :typeid "\\" :name "throne" :font 'sans :desc "")))
 
-(defstruct (playerdata (:include basicdata)))
-
-(defconstant +PLAYERDATA+ 
-  '(:char "@" :typeid "@" :name "player" :font 'sans :desc ""))
+(defstruct leveldata
+  name
+  w h minw minh maxw maxh
+  parents childs
+  features
+  items
+  monsters)
 
 (defconstant +LEVELDATA+
   '((:name "doormat" :w 50 :h 25 :minw 3 :minh 3 :maxw 6 :maxh 6 :parents (end) :childs (1))
@@ -106,28 +109,49 @@ Heheheheeee... You came into my humble home, bold adventurer? You search for tre
   aktlevel
   x y
   state
-  thinkfunc)
+  thinkfunc
+  turns)
 
-(defstruct (lifeform (:include object))
-  gender
+(defstruct (objectwithrole (:include object))
   role
-  deity
-  armor
-  weapons
-  tools
-  magic
   hp maxhp
   power maxpower
-  alignment
-  xp
   str maxstr
   dex maxdex
   con maxcon
   int maxint
   wis maxwis
   cha maxcha 				; charisma
+  )
+
+(defstruct (playerdata (:include basicdata)))
+
+(defconstant +PLAYERDATA+ 
+  '(:char "@" :typeid "@" :name "player" :font 'sans :desc ""))
+
+(defconstant +ROLEPARAMS+ '((:role scamp
+			     :desc "A scamp's a scamp."
+			     :hp 10 :maxhp 10
+			     :power 1 :maxpower 1
+			     :str 1 :maxstr 1
+			     :dex 1 :maxdex 1
+			     :con 1 :maxcon 1
+			     :int 1 :maxint 1
+			     :wis 1 :maxwis 1
+			     :cha 1 :maxcha 1)))
+
+(defstruct (lifeform (:include objectwithrole))
+  gender
+  deity
+  armor
+  weapons
+  tools
+  magic
+  alignment
+  xp
   purse
-  inventory)
+  inventory
+  )
 
 (defstruct level
   name
@@ -140,8 +164,11 @@ Heheheheeee... You came into my humble home, bold adventurer? You search for tre
 
 (defstruct dungeon
   player
-  levels
-  turns)
+  levels)
+
+(defparameter dkords '((-1 . -1) (0 . -1) (1 . -1)
+		       (-1 . 0)  (1 . 0)
+		       (-1 . 1)  (0 . 1)  (1 . 1)))
 
 ;-------------------------------------------------------------------------------|
 (defconstant +TESTLEVEL+

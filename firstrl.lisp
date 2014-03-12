@@ -38,10 +38,12 @@
 		    (let ((player (do-chargen console)))
 		     (setf dungeon (make-dungeon
 				    :player player
-				    :levels (gen-levels player)
-				    :turns 0))
+				    :levels (gen-levels player)))
 		     (spawn-player player dungeon)
+		     (display-copyright console)
 		     (draw-level console (get-player-level dungeon))
+		     (draw-player console player)
+		     (add-msg console (format nil "Welcome to the ~A!" (level-name (get-player-level dungeon))))
 		     (update-console console))
 		    'indungeon)
 		   ('indungeon
@@ -71,7 +73,10 @@
   (dolist (f +DUNGEONFEATURESDATA+)
     (let ((feature (apply #'make-dungeonfeaturedata f)))
       (setf (gethash (dungeonfeaturedata-typeid feature) *dungeonfeaturedata*) feature)))
-
+  (dotimes (i (length +LEVELDATA+))
+    (let ((leveldata (apply #'make-leveldata (nth i +LEVELDATA+))))
+      (setf (gethash i *leveldata*) leveldata))
+    )
   (setf *playerdata* (apply #'make-playerdata +PLAYERDATA+))
   (init-glyp-cache))
 
@@ -107,39 +112,52 @@
 
 (defun do-chargen (console)
   "Player character generation."
-  (make-lifeform 
-   :name "teszt player"
+  (make-lifeform
+   :name "AXCSDAVF ASRF"
+   :typeid "@"
+   :aktlevel 0
+   :state 'alive
+   :turns 0
+   
+   :role 'scamp
+   :hp 10 :maxhp 10
+   :power 1 :maxpower 1
+   :str 1 :maxstr 1
+   :dex 1 :maxdex 1
+   :con 1 :maxcon 1
+   :int 1 :maxint 1
+   :wis 1 :maxwis 1
+   :cha 1 :maxcha 1
+   
    :gender 'm
-   :role 'knight
-   :alignment 'chaothic-good
    :deity 'zumba
-   :inventory '()
-   :armor '()
-   :weapons '()
-   :tools '()
-   :hp 100 :maxhp 100
-   :aktlevel 0))
+   :armor ()
+   :weapons ()
+   :tools ()
+   :magic ()
+   :alignment 'chaothic-good
+   :xp 0
+   :purse 1
+   :inventory ()
+   ))
 
 (defun gen-levels (player)
   "Generate dungeon levels for player."
-  (list 
-   (create-level (nth 0 +LEVELDATA+))
-   (create-level (nth 1 +LEVELDATA+))
+  (list
+   (create-level (gethash 0 *leveldata*))
+   (create-level (gethash 1 *leveldata*))
    (convert-test-level "test level" +TESTLEVEL+)))
 
 (defun create-level (leveldata)
-  (let ((map (apply #'gen-level* (nth 0 +LEVELDATA+))))
+  (let ((map (gen-level* leveldata)))
     (make-level
-     :name (apply #'get-leveldata-name leveldata)
-     :parents (apply #'get-leveldata-parents leveldata)
-     :childs (apply #'get-leveldata-childs leveldata)
+     :name (leveldata-name leveldata)
+     :parents (leveldata-parents leveldata)
+     :childs (leveldata-childs leveldata)
      :features (gen-features leveldata map) ; first gen the features
      :items ()				; next gen the items
      :monsters ()			; last gen the monsters
      :map map)))
-
-(defun get-player-level (dungeon)
-  (nth (lifeform-aktlevel (dungeon-player dungeon)) (dungeon-levels dungeon)))
 
 (defun spawn-player (player dungeon)
   "Place player on the first level in dungeon by the ladder upwards (entry)."
@@ -149,31 +167,58 @@
       (setf (lifeform-x player) (object-x (first upladders)))
       (setf (lifeform-y player) (object-y (first upladders))))))
 
+(defun display-copyright (console)
+    (display-text console 55 33 "firstrl - Copyright (C) 2014 Kalman Kiss" :font 'sans-bold))
+
 (defun do-update-dungeon (console dungeon)
-  (let ((key (wait-for-any-key console)))
+  (let ((key (wait-for-any-key console))
+	(res 'indungeon)
+	(player (dungeon-player dungeon))
+	(level (get-player-level dungeon))
+	)
     (clear-console console)
-    (update-console console)
-    (display-text console 55 33 "firstrl - Copyright (C) 2014 Kalman Kiss" :font 'sans-bold)
+;    (update-console console)
+    (display-copyright console)
     (cond ((key-eq key +key-q+)
-	   'end)
-	  ((key-eq key +key-space+)
-	   (format t "*")
-	   (player-idle-turn console dungeon)
-	   (update-console console)
-	   'indungeon)
+	   (setf res 'end))
+	  ((key-eq key +key-.+)
+	   (format t ".")
+	   (update-idle-player player))
+	  ;; player movement input
+	  ((key-eq key +key-y+)
+	   (move-player dungeon 0))
+	  ((key-eq key +key-k+)
+	   (move-player dungeon 1))
+	  ((key-eq key +key-u+)
+	   (move-player dungeon 2))
 	  ((key-eq key +key-h+)
-	   (format t "help~%")
-	   (display-help console)
-	   'indungeon))))
+	   (move-player dungeon 3))
+	  ((key-eq key +key-l+)
+	   (move-player dungeon 4))
+	  ((key-eq key +key-b+)
+	   (move-player dungeon 5))
+	  ((key-eq key +key-j+)
+	   (move-player dungeon 6))
+	  ((key-eq key +key-n+)
+	   (move-player dungeon 7))
+	  ((key-eq key +key-<+)
+	   (move-player-down dungeon))
+	  ((key-eq key +key->+)
+	   (move-player-up dungeon))
+	  )
+    (update-level level)
+    (draw-level console level)
+    (draw-player console player)
+    (update-console console)
+    res))
+
+;	   (format t "help~%")
+;	   (display-help console)
 
 (defun player-idle-turn (console dungeon)
-  (incf (dungeon-turns dungeon))
   (let ((player (dungeon-player dungeon))
 	(level (get-player-level dungeon)))
-   (update-idle-player player)
-   (update-level level)
-   (draw-level console level)
-   (draw-player console player))
+   )
   )
 
 (defun display-help (console))
@@ -184,7 +229,8 @@
 (defun do-win (console dungeon)
   'end)
 
-(defun update-idle-player (player))
+(defun update-idle-player (player)
+    (incf (lifeform-turns player)))
 
 (defun update-level (level))
 
@@ -210,13 +256,3 @@
     (display-char-glyp console (+ dx (object-x m)) (+ dy (object-y m)) 
 		  (string (monsterdata-char (gethash (object-typeid m) *monsterdata*))))))
 
-(defun draw-player (console player &key (dx 1) (dy 1))
-  (display-text console 0 27 "1")
-  (display-text console 0 28 "2")
-  (display-text console 0 29 "3")
-  (display-text console 0 30 "4")
-  (display-text console 0 31 "5")
-  (display-text console 0 32 "6")
-  (display-text console 0 33 "7")
-  (display-text console (+ dx (lifeform-x player)) (+ dy (lifeform-y player)) (playerdata-char *playerdata*))
-  )
