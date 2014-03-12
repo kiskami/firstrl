@@ -63,7 +63,7 @@ http://cl-cookbook.sourceforge.net/strings.html"
 			      (setf (aref map_ x y) #\.))
 			     (feature
 			      (format t "feature ~A at ~A,~A~%" c x y)
-			      (pushnew (make-object :name "feature" 
+			      (pushnew (make-object :name "feature"
 						    :typeid (string c) 
 						    :x x :y y) features)
 			      (setf (aref map_ x y) c))))
@@ -73,3 +73,6 @@ http://cl-cookbook.sourceforge.net/strings.html"
       (make-level :name name :parents nil :childs nil
 		  :monsters monsters :items items :features features
 		  :map map_))))
+
+(defun get-rnd-number (min max)
+  (+ min (random (1+ (- max min)) *RNDSTATE*)))

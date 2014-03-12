@@ -40,7 +40,9 @@
 				    :player player
 				    :levels (gen-levels player)
 				    :turns 0))
-		     (spawn-player player dungeon))
+		     (spawn-player player dungeon)
+		     (draw-level console (get-player-level dungeon))
+		     (update-console console))
 		    'indungeon)
 		   ('indungeon
 		    (format t "in dungeon...~%")
@@ -120,7 +122,21 @@
 
 (defun gen-levels (player)
   "Generate dungeon levels for player."
-  (list (convert-test-level "test level" +TESTLEVEL+)))
+  (list 
+   (create-level (nth 0 +LEVELDATA+))
+   (create-level (nth 1 +LEVELDATA+))
+   (convert-test-level "test level" +TESTLEVEL+)))
+
+(defun create-level (leveldata)
+  (let ((map (apply #'gen-level* (nth 0 +LEVELDATA+))))
+    (make-level
+     :name (apply #'get-leveldata-name leveldata)
+     :parents (apply #'get-leveldata-parents leveldata)
+     :childs (apply #'get-leveldata-childs leveldata)
+     :features (gen-features leveldata map) ; first gen the features
+     :items ()				; next gen the items
+     :monsters ()			; last gen the monsters
+     :map map)))
 
 (defun get-player-level (dungeon)
   (nth (lifeform-aktlevel (dungeon-player dungeon)) (dungeon-levels dungeon)))
@@ -129,8 +145,9 @@
   "Place player on the first level in dungeon by the ladder upwards (entry)."
   (setf (lifeform-aktlevel player) 0)
   (let ((upladders (find-dungeonfeatures-in-level (get-player-level dungeon) ">")))
-    (setf (lifeform-x player) (object-x (first upladders)))
-    (setf (lifeform-y player) (object-y (first upladders)))))
+    (when upladders 
+      (setf (lifeform-x player) (object-x (first upladders)))
+      (setf (lifeform-y player) (object-y (first upladders))))))
 
 (defun do-update-dungeon (console dungeon)
   (let ((key (wait-for-any-key console)))

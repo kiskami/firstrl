@@ -94,6 +94,12 @@ Heheheheeee... You came into my humble home, bold adventurer? You search for tre
 (defconstant +PLAYERDATA+ 
   '(:char "@" :typeid "@" :name "player" :font 'sans :desc ""))
 
+(defconstant +LEVELDATA+
+  '((:name "doormat" :w 50 :h 25 :minw 3 :minh 3 :maxw 6 :maxh 6 :parents (end) :childs (1))
+    (:name "antechamber" :w 60 :h 25 :minw 4 :minh 4 :maxw 8 :maxh 8 :parents (0))
+    )
+  )
+
 (defstruct object
   name
   typeid

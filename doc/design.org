@@ -39,3 +39,6 @@ permadeath
 
 blessed, cursed
 
+** Useful links
+
+- http://www.roguebasin.com/index.php?title=Articles#Map
