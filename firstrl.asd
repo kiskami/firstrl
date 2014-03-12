@@ -33,7 +33,7 @@
   :version "0.0.1"
   :license "GPL2"
   :depends-on (#:lispbuilder-sdl
-               #:lispbuilder-sdl-image
+;               #:lispbuilder-sdl-image
 	       #:lispbuilder-sdl-ttf)
   :components ((:file "package")
 	       (:file "common" :depends-on ("package"))

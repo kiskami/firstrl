@@ -70,6 +70,7 @@
 ***** TODO game balance
 **** TODO Packaging, release
 ***** src push to code.google
+      hg push https://kiskami%40freemail.hu@code.google.com/p/firstrl/
 ***** build -> zip
 ***** upload to distributing site
 **** TODO Announcement

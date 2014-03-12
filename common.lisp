@@ -55,7 +55,7 @@ Source code is at https://code.google.com/p/firstrl/")
 (defparameter +GRAY-COLOR+ (sdl:color :r 170 :g 170 :b 170 :a 1))
 (defparameter +DEFCOLOR+ +WHITE-COLOR+)
 
-(defparameter *RNDSTATE* (make-random-state t))
+(defparameter *RNDSTATE* nil)
 
 (defparameter *monsterdata* (make-hash-table :test #'equal))
 (defparameter *itemdata* (make-hash-table :test #'equal))

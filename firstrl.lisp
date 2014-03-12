@@ -64,6 +64,7 @@
 
 (defun init-game-data ()
   (format t "initializing game data...~%")
+  (setf *RNDSTATE* (make-random-state t))
   (dolist (m +MONSTERSDATA+)
     (let ((monsta (apply #'make-monsterdata m)))
       (setf (gethash (monsterdata-typeid monsta) *monsterdata*) monsta)))
