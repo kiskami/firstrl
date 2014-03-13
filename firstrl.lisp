@@ -51,10 +51,12 @@
 		    (do-update-dungeon console dungeon))
 		   ('death
 		    (format t "death...~%")
-		    (do-death console dungeon))
+		    (do-death console dungeon)
+		    'end)
 		   ('win
 		    (format t "win...~%")
-		    (do-win console dungeon))
+		    (do-win console dungeon)
+		    'end)
 		   ('end
 		    (setf should-exit t))
 		   (otherwise
@@ -150,15 +152,21 @@
    (convert-test-level "test level" +TESTLEVEL+)))
 
 (defun create-level (leveldata)
-  (let ((map (gen-level* leveldata)))
+  (let* ((map (gen-level* leveldata))
+	 (f (gen-features leveldata map)) ; first gen the features
+	 (i (gen-items leveldata map f))  ; next gen the items
+	 (m (gen-monsters leveldata map f i)) ; last gen the monsters
+	 )
     (make-level
      :name (leveldata-name leveldata)
      :parents (leveldata-parents leveldata)
      :childs (leveldata-childs leveldata)
-     :features (gen-features leveldata map) ; first gen the features
-     :items ()				; next gen the items
-     :monsters ()			; last gen the monsters
+     :features f
+     :items i
+     :monsters m
      :map map)))
+
+(defun gen-items (leveldata map features))
 
 (defun spawn-player (player dungeon)
   "Place player on the first level in dungeon by the ladder upwards (entry)."

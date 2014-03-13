@@ -32,18 +32,27 @@ Heheheheeee... You came into my humble home, bold adventurer? You search for tre
   font
   desc)
 
-(defstruct (monsterdata (:include basicdata)))
+(defstruct (monsterdata (:include basicdata))
+  att def 
+  spe					; speed of attack
+  hp
+  xp
+  rel					; relation to player
+  )
 
-;;; record structure: (character typeid name)
 (defconstant +MONSTERSDATA+ 
-  '((:char "r" :typeid "rr" :name "rat" :font 'sans :desc "") 
-    (:char "r" :typeid "rm" :name "mole" :font 'sans :desc "")
-    (:char "s" :typeid "sp" :name "spider" :font 'sans :desc "") 
+  '((:char "r" :typeid "rr" :name "rat" :font 'sans :desc ""
+     :att 0 :def 0 :spe 0 :hp 1 :xp 1 :rel 'neutral)
+    (:char "r" :typeid "rm" :name "mole" :font 'sans :desc ""
+     :att 1 :def 0 :spe 1 :hp 2 :xp 2 :rel 'neutral)
+    (:char "s" :typeid "sp" :name "spider" :font 'sans :desc ""
+     :att 1 :def 1 :spe 1 :hp 4 :xp 3 :rel 'angry)
     (:char "s" :typeid "sc" :name "centipede" :font 'sans :desc "") 
     (:char "s" :typeid "ss" :name "scorpion" :font 'sans :desc "")
     (:char "w" :typeid "w" :name "worm" :font 'sans :desc "")
     (:char "B" :typeid "B" :name "bat" :font 'sans :desc "")
-    (:char "k" :typeid "k" :name "kobold" :font 'sans :desc "")
+    (:char "k" :typeid "k" :name "kobold" :font 'sans :desc ""
+     :att 1 :def 1 :spe 1 :hp 8 :xp 8 :rel 'attack)
     (:char "o" :typeid "o" :name "orc" :font 'sans :desc "")
     (:char "h" :typeid "h" :name "humanoid" :font 'sans :desc "")
     (:char "G" :typeid "G" :name "gnome" :font 'sans :desc "")
@@ -98,8 +107,30 @@ Heheheheeee... You came into my humble home, bold adventurer? You search for tre
   monsters)
 
 (defconstant +LEVELDATA+
-  '((:name "doormat" :w 50 :h 25 :minw 3 :minh 3 :maxw 6 :maxh 6 :parents (end) :childs (1))
-    (:name "antechamber" :w 60 :h 25 :minw 4 :minh 4 :maxw 8 :maxh 8 :parents (0))
+  '((:name "doormat" :w 50 :h 25 :minw 3 :minh 3 :maxw 6 :maxh 6 :parents (end) :childs (1)
+     :monsters ((:typeid "rr" :cnt 10)
+		(:typeid "rm" :cnt 5)
+		(:typeid "sp" :cnt 3)
+		(:typeid "k" :cnt 3)
+		)
+     :items ()
+     )
+    (:name "antechamber" :w 60 :h 25 :minw 4 :minh 4 :maxw 8 :maxh 8 :parents (0) :childs (2)
+     :monsters ()
+     :items ()     
+     )
+    (:name "kitchen" :w 70 :h 25 :minw 5 :minh 5 :maxw 10 :maxh 8 :parents (1) :childs (3)
+     :monsters ()
+     :items ()
+     )
+    (:name "larder" :w 80 :h 25 :minw 6 :minh 6 :maxw 12 :maxh 8 :parents (2) :childs (4)
+     :monsters ()
+     :items ()
+     )
+    (:name "toilet" :w 80 :h 25 :minw 6 :minh 6 :maxw 12 :maxh 8 :parents (3)
+     :monsters ()
+     :items ()
+     )
     )
   )
 
@@ -113,7 +144,7 @@ Heheheheeee... You came into my humble home, bold adventurer? You search for tre
   turns)
 
 (defstruct (objectwithrole (:include object))
-  role
+  role roledesc
   hp maxhp
   power maxpower
   str maxstr
@@ -129,8 +160,8 @@ Heheheheeee... You came into my humble home, bold adventurer? You search for tre
 (defconstant +PLAYERDATA+ 
   '(:char "@" :typeid "@" :name "player" :font 'sans :desc ""))
 
-(defconstant +ROLEPARAMS+ '((:role scamp
-			     :desc "A scamp's a scamp."
+(defconstant +ROLEPARAMS+ '((:role 'scamp
+			     :roledesc "A scamp's a scamp."
 			     :hp 10 :maxhp 10
 			     :power 1 :maxpower 1
 			     :str 1 :maxstr 1
@@ -151,6 +182,9 @@ Heheheheeee... You came into my humble home, bold adventurer? You search for tre
   xp
   purse
   inventory
+  att 
+  def 
+  spe
   )
 
 (defstruct level
