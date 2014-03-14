@@ -37,6 +37,21 @@ http://cl-cookbook.sourceforge.net/strings.html"
 (defun get-player-level (dungeon)
   (nth (lifeform-aktlevel (dungeon-player dungeon)) (dungeon-levels dungeon)))
 
+(defun is-object-at (x y lst)
+  (dolist (o lst nil)
+    (if (and (= x (object-x o))
+	     (= y (object-y o)))
+	(return-from is-object-at o))))
+
+(defun is-a-monster (lifeform)
+  (gethash (lifeform-typeid lifeform) *monsterdata*))
+
+(defun is-an-item (object)
+  (gethash (object-typeid object) *itemdata*))
+
+(defun is-a-dungeonfeature (object)
+  (gethash (object-typeid object) *dungeonfeaturedata*))
+
 (defun convert-test-level (name str)
   "Convert character string level representation to data structs."
   (let ((lines (split-by str #\Newline))
@@ -53,19 +68,19 @@ http://cl-cookbook.sourceforge.net/strings.html"
 			   (item (gethash (string c) *itemdata*))
 			   (feature (gethash (string c) *dungeonfeaturedata*)))
 		       (cond (monsta
-			      (format t "monsta ~A at ~A,~A~%" c x y)
+;			      (format t "monsta ~A at ~A,~A~%" c x y)
 			      (pushnew (make-lifeform :name "monsta" 
 						      :typeid (string c) 
 						      :x x :y y) monsters)
 			      (setf (aref map_ x y) #\.))
 			     (item
-			      (format t "item ~A at ~A,~A~%" c x y)
+;			      (format t "item ~A at ~A,~A~%" c x y)
 			      (pushnew (make-object :name "item" 
 						    :typeid (string c) 
 						    :x x :y y) items)
 			      (setf (aref map_ x y) #\.))
 			     (feature
-			      (format t "feature ~A at ~A,~A~%" c x y)
+;			      (format t "feature ~A at ~A,~A~%" c x y)
 			      (pushnew (make-object :name "feature"
 						    :typeid (string c) 
 						    :x x :y y) features)

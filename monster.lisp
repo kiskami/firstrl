@@ -26,14 +26,16 @@
   (let ((res ()))
     (dolist (mp (leveldata-monsters leveldata))
       (when mp
-	(dolist (genparam mp)
-	  (setf res (append res
-			    (apply #'gen-monsters* 
-				   leveldata map features items
-				   genparam))))))
+	(setf res (append res
+			  (apply #'gen-monsters* 
+				 :leveldata leveldata 
+				 :map map 
+				 :features features 
+				 :items items
+				 mp)))))
     res))
 
-(defun gen-monsters* (leveldata map features items &key typeid (cnt 1))
+(defun gen-monsters* (&key leveldata map features items typeid (cnt 1))
   (let ((res ()))
     (dotimes (i cnt res)
       (let ((md (gethash typeid *monsterdata*))
@@ -41,21 +43,21 @@
 	    )
 	(cond (md
 	       (setf res (append res
-				 (make-lifeform
-				  :name (monsterdata-name md)
-				  :typeid typeid
-				  :x (car kord) :y (cdr kord)
-				  :state 'alive
-				  :thinkfunc #'monster-think
-				  :turns 0
-				  :role (monsterdata-rel md)
-				  :hp (monsterdata-hp md)
-				  :maxhp (monsterdata-hp md)
-				  :att (monsterdata-att md)
-				  :def (monsterdata-def md)
-				  :spe (monsterdata-spe md)
-				  :xp (monsterdata-xp md)
-				  :alignment (monsterdata-rel md))))
+				 (list (make-lifeform
+				   :name (monsterdata-name md)
+				   :typeid typeid
+				   :x (car kord) :y (cdr kord)
+				   :state 'alive
+				   :thinkfunc #'monster-think
+				   :turns 0
+				   :role (monsterdata-rel md)
+				   :hp (monsterdata-hp md)
+				   :maxhp (monsterdata-hp md)
+				   :att (monsterdata-att md)
+				   :def (monsterdata-def md)
+				   :spe (monsterdata-spe md)
+				   :xp (monsterdata-xp md)
+				   :alignment (monsterdata-rel md)))))
 	       )
 	      (t
 	       (error "Monsterdata not found.")))
@@ -67,23 +69,13 @@
   "lm - monsterlist so far by gen-monsters*"
   (do ((x 0 (get-rnd-number 1 (1- (leveldata-w leveldata))))
        (y 0 (get-rnd-number 1 (1- (leveldata-h leveldata)))))
-      ((and (not (is-floor map x y))
-	    (not (is-feature-at x y fea))
-	    (not (is-item-at x y ite))
-	    (not (in-monsterlist x y ml))
+      ((and (is-floor map x y)
+	    (not (is-object-at x y fea)) ; feature there?
+	    (not (is-object-at x y ite)) ; item there?
+	    (not (is-object-at x y ml))	; monster there?
 	    ) (cons x y))
     ;empty
     ))
-
-(defun is-feature-at (x y fealist))
-
-(defun is-item-at (x y itemlist))
-
-(defun in-monsterlist (x y lst)
-  (dolist (m lst nil)
-    (if (and (= x (lifeform-x m))
-	     (= y (lifeform-y m)))
-	(return-from in-monsterlist t))))
 
 (defun monster-think (msg)
   (declare (ignore msg)))

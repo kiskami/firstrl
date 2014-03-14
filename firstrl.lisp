@@ -142,6 +142,7 @@
    :xp 0
    :purse 1
    :inventory ()
+   :att 1 :def 1 :spe 1
    ))
 
 (defun gen-levels (player)
@@ -149,7 +150,11 @@
   (list
    (create-level (gethash 0 *leveldata*))
    (create-level (gethash 1 *leveldata*))
-   (convert-test-level "test level" +TESTLEVEL+)))
+   (create-level (gethash 2 *leveldata*))
+   (create-level (gethash 3 *leveldata*))
+   (create-level (gethash 4 *leveldata*))
+;   (convert-test-level "test level" +TESTLEVEL+)
+   ))
 
 (defun create-level (leveldata)
   (let* ((map (gen-level* leveldata))
@@ -221,14 +226,15 @@
     (update-console console)
     res))
 
-;	   (format t "help~%")
-;	   (display-help console)
-
 (defun player-idle-turn (console dungeon)
   (let ((player (dungeon-player dungeon))
 	(level (get-player-level dungeon)))
    )
   )
+
+(defun move-player-down (dungeon))
+
+(defun move-player-up (dungeon))
 
 (defun display-help (console))
 
@@ -241,10 +247,18 @@
 (defun update-idle-player (player)
     (incf (lifeform-turns player)))
 
-(defun update-level (level))
+(defun update-level (level)
+  (dolist (m (level-monsters level))
+    (when (lifeform-thinkfunc m)
+      (funcall (lifeform-thinkfunc m) 'update)))
+  (dolist (i (level-items level))
+    (when (object-thinkfunc i)
+      (funcall (object-thinkfunc i) 'update)))
+  )
 
 (defun draw-level (console level)
   (draw-map console (level-map level))
+  (draw-features console (level-features level))
   (draw-items console (level-items level))
   (draw-monsters console (level-monsters level)))
 
@@ -263,5 +277,9 @@
 (defun draw-monsters (console monstas &key (dx 1) (dy 1))
   (dolist (m monstas)
     (display-char-glyp console (+ dx (object-x m)) (+ dy (object-y m)) 
-		  (string (monsterdata-char (gethash (object-typeid m) *monsterdata*))))))
+		       (string (monsterdata-char (gethash (object-typeid m) *monsterdata*))))))
 
+(defun draw-features (console features &key (dx 1) (dy 1))
+  (dolist (f features)
+    (display-char-glyp console (+ dx (object-x f)) (+ dy (object-y f)) 
+		       (string (dungeonfeaturedata-char (gethash (object-typeid f) *dungeonfeaturedata*))))))

@@ -41,9 +41,9 @@
 	       (:file "utils" :depends-on ("package" "data" "common"))
 	       (:file "dungen" :depends-on ("package" "data" "common" "utils"))
 	       (:file "console" :depends-on ("package" "common" "utils"))
-	       (:file "player" :depends-on ("package" "common" "data" "utils" "console"))
 	       (:file "monster" :depends-on ("package" "common" "data" "utils"
 						       "dungen"))
+	       (:file "player" :depends-on ("package" "common" "data" "utils" "console"))
                (:file "firstrl" :depends-on ("package" "common" "data" "utils"
 						       "console" "dungen"
 						       "player" "monster"))))
