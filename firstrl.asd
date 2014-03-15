@@ -30,7 +30,7 @@
 (asdf:defsystem #:firstrl
   :description "firstrl is my first try on a roguelike"
   :author "Kalman Kiss <kiskami@freemail.hu>"
-  :version "0.0.1"
+  :version "0.0.2"
   :license "GPL2"
   :depends-on (#:lispbuilder-sdl
 ;               #:lispbuilder-sdl-image
@@ -41,9 +41,13 @@
 	       (:file "utils" :depends-on ("package" "data" "common"))
 	       (:file "dungen" :depends-on ("package" "data" "common" "utils"))
 	       (:file "console" :depends-on ("package" "common" "utils"))
+	       (:file "msgwindow" :depends-on ("package" "common" "console"))
 	       (:file "monster" :depends-on ("package" "common" "data" "utils"
-						       "dungen"))
-	       (:file "player" :depends-on ("package" "common" "data" "utils" "console"))
+						       "dungen" "console"
+						       "msgwindow"))
+	       (:file "player" :depends-on ("package" "common" "data" "utils"
+						      "console" "monster"
+						      "msgwindow"))
                (:file "firstrl" :depends-on ("package" "common" "data" "utils"
 						       "console" "dungen"
 						       "player" "monster"))))

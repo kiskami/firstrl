@@ -79,3 +79,21 @@
 
 (defun monster-think (msg)
   (declare (ignore msg)))
+
+(defun damage-monster (console monsta dmg)
+  (cond ((>= dmg (lifeform-hp monsta))
+	 (setf (lifeform-hp monsta) 0
+	       (lifeform-state monsta) 'dead)
+	 (add-msg console (format nil "The ~A dies." (lifeform-name monsta)))
+	 )
+	(t
+	 (decf (lifeform-hp monsta) dmg)
+	 (when (<= (lifeform-hp monsta) (/ (lifeform-maxhp monsta) 2))
+	   (add-msg console (format nil "The ~A is heavily wounded." 
+				    (lifeform-name monsta))))
+	 )
+	)
+  )
+
+(defun monsta-alive (monsta)
+  (equal (lifeform-state monsta) 'dead))

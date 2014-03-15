@@ -22,9 +22,6 @@
 
 (in-package #:firstrl)
 
-(defun add-msg (console msg)
-  (display-text-wrapped console 1 27 (- (consoledata-w console) 2) 2 msg))
-
 (defun display-hud_ (console player)
   (display-text console 1 32 (format nil "@ Player ~A ~A ~A ~A HP:~A/~A PW:~A/~A Xp:~A $:~A"
 				     (lifeform-name player)
@@ -70,7 +67,7 @@
   (display-text console (+ dx (lifeform-x player)) (+ dy (lifeform-y player)) (playerdata-char *playerdata*))
   )
 
-(defun move-player (dungeon dir)
+(defun move-player (console dungeon dir)
   (let* ((player (dungeon-player dungeon))
 	 (level (get-player-level dungeon))
 	 (newkords (get-newkords player dir)))
@@ -79,19 +76,19 @@
 			     (level-monsters level)))
 	    (canstep nil))
 	; monsta? fight!
-	(setf canstep (if o (monsta-fight player o) t))
+	(setf canstep (if o (monsta-fight console player o) t))
 
 	(when canstep
 	  (setf o (is-object-at (car newkords) (cdr newkords)
 				(level-items level)))
 	  ; item? pick up!
-	  (setf canstep (if o (item-pickup player o) t))
+	  (setf canstep (if o (item-pickup console player o) t))
 
 	  (when canstep         
 	    (setf o (is-object-at (car newkords) (cdr newkords)
 				  (level-features level)))
 	    ; dungeonfeature? handle
-	    (setf canstep (if o (feature-handle player o) t))))
+	    (setf canstep (if o (feature-handle console player o) t))))
 
 	(when canstep
 	  (setf (lifeform-x player) (car newkords)
@@ -102,17 +99,103 @@
     (cons (+ (lifeform-x player) (car d))
 	  (+ (lifeform-y player) (cdr d)))))
 
-(defun monsta-fight (player monsta)
+(defun monsta-fight (console player monsta)
   (format t "stepping into a monsta! fight!~%")
-  t
+  (let ((player-spe (lifeform-spe player))
+	(monsta-spe (lifeform-spe monsta))
+	)
+    ; compare speed - faster side attacks first
+    (cond ((>= player-spe monsta-spe)
+	   (if (> player-spe 0)
+	       (player-attack console player monsta)
+	       (add-msg console "Too slow, you can't attack!"))
+	   (if (> monsta-spe 0)
+	       (monsta-attack console player monsta)
+	       (add-msg console (format nil "The ~A doesn't fight back!" (lifeform-name monsta))))
+	   )
+	  (t
+	   (monsta-attack console player monsta)
+	   (if (> player-spe 0)
+	       (player-attack console player monsta)
+	       (add-msg console "Too slow, you can't fight back!"))
+	   )	
+	  ))
   )
 
-(defun item-pickup (player item)
+(defun item-pickup (console player item)
   (format t "item pickup.~%")
   t
   )
 
-(defun feature-handle (player fea)
+(defun feature-handle (console player fea)
   (format t "dungeon feature in the way...~%")
   t
   )
+
+(defun player-attack (console player monsta)
+  (let ((patt (get-rnd-number 0 (lifeform-att player)))
+	(mdef (get-rnd-number 0 (lifeform-def monsta))))
+    (when (and (player-alive player) (monsta-alive monsta))
+      (let ((msg ""))
+	(cond ((and (> patt 0) (> patt mdef))
+	       (setf msg (format nil "You hit the ~A, and wound ~A hp."
+				 (lifeform-name monsta)
+				 (- patt mdef)))
+	       (damage-monster console monsta (- patt mdef))
+	       )
+	      ((and (> patt 0) (= patt mdef))
+	       (setf msg (format nil "The ~A wards off your attack barely."
+				 (lifeform-name monsta)))
+	       )
+	      ((and (> patt 0) (< patt mdef))
+	       (setf msg (format nil
+				 "You try to hit the ~A, but it evades you easily."
+				 (lifeform-name monsta)))
+	       )
+	      ((= patt 0)
+	       (setf msg (format nil "This was a crippled attempt from you.")))
+	      )
+	(add-msg console msg)))))
+
+(defun monsta-attack (console player monsta)
+  (let ((matt (get-rnd-number 0 (lifeform-att monsta)))
+	(pdef (get-rnd-number 0 (lifeform-def player))))
+    (when (and (player-alive player) (monsta-alive monsta))
+      (let ((msg ""))
+	(cond ((and (> matt 0) (> matt pdef))
+	       (setf msg (format nil "The ~A hits you, and wound ~A hp."
+				 (lifeform-name monsta)
+				 (- matt pdef)))
+	       (damage-player console monsta (- matt pdef))
+	       )
+	      ((and (> matt 0) (= matt pdef))
+	       (setf msg (format nil "You ward off the attack of the ~A barely."
+				 (lifeform-name monsta)))
+	       )
+	      ((and (> matt 0) (< matt pdef))
+	       (setf msg (format nil
+				 "The ~A try to hit you, but you evade easily."
+				 (lifeform-name monsta)))
+	       )
+	      ((= matt 0)
+	       (setf msg (format nil "This was a crippled attempt from the ~A."
+				 (lifeform-name monsta))))
+	      )
+	(add-msg console msg)))))
+
+(defun damage-player (console ply dmg)
+    (cond ((>= dmg (lifeform-hp ply))
+	 (setf (lifeform-hp ply) 0
+	       (lifeform-state ply) 'dead)
+	 (add-msg console (format nil "*** You die from the attack. Press any key to quit. ***"))
+	 )
+	(t
+	 (decf (lifeform-hp ply) dmg)
+	 (when (<= (lifeform-hp ply) (/ (lifeform-maxhp ply) 2))
+	   (add-msg console (format nil "You are heavily wounded.")))
+	 )
+	)
+  )
+
+(defun player-alive (ply)
+  (equal (lifeform-state ply) 'dead))
