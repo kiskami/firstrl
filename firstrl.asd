@@ -42,13 +42,15 @@
 	       (:file "dungen" :depends-on ("package" "data" "common" "utils"))
 	       (:file "console" :depends-on ("package" "common" "utils"))
 	       (:file "msgwindow" :depends-on ("package" "common" "console"))
+	       (:file "items" :depends-on ("package" "common" "data" "console"))
 	       (:file "monster" :depends-on ("package" "common" "data" "utils"
 						       "dungen" "console"
-						       "msgwindow"))
+						       "msgwindow" "items"))
 	       (:file "player" :depends-on ("package" "common" "data" "utils"
 						      "console" "monster"
-						      "msgwindow"))
+						      "msgwindow" "items"))
                (:file "firstrl" :depends-on ("package" "common" "data" "utils"
 						       "console" "dungen"
-						       "player" "monster"))))
+						       "player" "monster"
+						       "items"))))
 

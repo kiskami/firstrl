@@ -42,26 +42,57 @@
 	 (parents (leveldata-parents leveldata))
 	 (parent-ladder-kords (gen-parent-ladder-kords (length parents) map))
 	 (ladderup (get-dungeonfeaturedata ">"))
-	 (i 0)
+	 (childs (leveldata-childs leveldata))
+	 (child-ladder-kords (gen-child-ladder-kords (length childs) map))
+	 (ladderdown (get-dungeonfeaturedata "<"))
 	 )
-    (dolist (p parents)
-      (setf result (append result (list (make-object :name (dungeonfeaturedata-name ladderup)
+    (dotimes (i (length parents))
+      (setf result (append result (list 
+				   (make-object :name (dungeonfeaturedata-name ladderup)
 						:typeid ">"
 						:x (car (nth i parent-ladder-kords))
 						:y (cdr (nth i parent-ladder-kords))
-						:state p
-						:thinkfunc nil))))
-      (incf i))
+						:state (nth i parents)
+						:thinkfunc nil)))))
+    (dotimes (i (length childs))
+      (setf result (append result (list 
+				   (make-object :name (dungeonfeaturedata-name ladderdown)
+						:typeid "<"
+						:x (car (nth i child-ladder-kords))
+						:y (cdr (nth i child-ladder-kords))
+						:state (nth i childs)
+						:thinkfunc nil)))))
+    
     result))
+
+(defun gen-items (leveldata map features))
 
 (defun get-dungeonfeaturedata (typeid)
   (gethash typeid *dungeonfeaturedata*))
 
-(defun gen-parent-ladder-kords (cnt map)
-  (let ((res nil)
+(defun gen-child-ladder-kords (cnt map)
+    (let ((res nil)
 	(kord nil))
     (when (> cnt 0)
-      ;; only one parent supported atm
+      ;; only one result atm
+      (loop for x from (1- (array-dimension map 0)) downto 0
+	 do
+	   (loop for y from (1- (array-dimension map 1)) downto 0
+	      do
+		(when (is-floor map x y)
+		  (setf kord (cons x y))
+		  (return)))
+	   (when kord (return))))
+    (format t "lateral-kord ~A~%" kord)
+    (setf res (append res (list kord)))
+    res)
+  )
+
+(defun gen-parent-ladder-kords (cnt map)
+    (let ((res nil)
+	(kord nil))
+    (when (> cnt 0)
+      ;; only one result atm
       (loop for x from 0 to (1- (array-dimension map 0))
 	 do
 	   (loop for y from 0 to (1- (array-dimension map 1))
@@ -69,10 +100,12 @@
 		(when (is-floor map x y)
 		  (setf kord (cons x y))
 		  (return)))
-	   (when kord (return)))
-      (format t "parent-ladder-kord ~A~%" kord)
-      (setf res (append res (list kord))))
-    res))
+	   (when kord (return))))
+    (format t "lateral-kord ~A~%" kord)
+    (setf res (append res (list kord)))
+    res)
+    )
+
 
 (defun gen-level (levelw levelh roomcount minw minh maxw maxh 
 		  &key (maxcorrlen +CORRIDOR_MAXLEN+) (stepsdivider +STEPS_DIVIDER+))

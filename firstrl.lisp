@@ -42,12 +42,13 @@
 		     (spawn-player player dungeon)
 		     (display-copyright console)
 		     (draw-level console (get-player-level dungeon))
+		     (welcome-to-level console (get-player-level dungeon))
 		     (draw-player console player)
-		     (add-msg console (format nil "Welcome to the ~A!" (level-name (get-player-level dungeon))))
 		     (update-console console))
 		    'indungeon)
 		   ('indungeon
-		    (format t "in dungeon...~%")
+		    (format t "in dungeon...~A~%" 
+			    (lifeform-turns (dungeon-player dungeon)))
 		    (do-update-dungeon console dungeon))
 		   ('death
 		    (format t "death...~%")
@@ -99,13 +100,15 @@
 ;			    :font (funcall get-monster-fontname m)
 				))
 	   *monsterdata*)
+
   (cache-char-glyp (playerdata-char *playerdata*)
-;		   :font (funcall get-player-fontname +PLAYER+)
+					;		   :font (funcall get-player-fontname +PLAYER+)
 		   ))
 
 (defun do-intro (console)
   "Display intro and wait for key to proceed to chargen."
   (clear-console console)
+  (display-copyright console)
   (display-text-wrapped console 20 15 40 10 +INTRO-TEXT+)
   (update-console console)
   (wait-for-keypress +key-space+ console)
@@ -171,18 +174,23 @@
      :monsters m
      :map map)))
 
-(defun gen-items (leveldata map features))
-
-(defun spawn-player (player dungeon)
-  "Place player on the first level in dungeon by the ladder upwards (entry)."
-  (setf (lifeform-aktlevel player) 0)
-  (let ((upladders (find-dungeonfeatures-in-level (get-player-level dungeon) ">")))
-    (when upladders 
-      (setf (lifeform-x player) (object-x (first upladders)))
-      (setf (lifeform-y player) (object-y (first upladders))))))
+(defun spawn-player (player dungeon &optional (level 0) (ud 'down))
+  "Place player on the level in dungeon by the ladder upwards (entry)."
+  (setf (lifeform-aktlevel player) level)
+  (let ((ladder (find-dungeonfeatures-in-level (get-player-level dungeon)
+					       (if (equal ud 'down)
+						">"
+						"<"))))
+    (when ladder 
+      (setf (lifeform-x player) (object-x (first ladder)))
+      (setf (lifeform-y player) (object-y (first ladder))))))
 
 (defun display-copyright (console)
     (display-text console 55 33 "firstrl - Copyright (C) 2014 Kalman Kiss" :font 'sans-bold))
+
+(defun welcome-to-level (console level)
+  (add-msg (format nil "Welcome to the ~A!" (level-name level)))
+  (display-msg-window console 1 27))
 
 (defun do-update-dungeon (console dungeon)
   (let ((key (wait-for-any-key console))
@@ -191,8 +199,8 @@
 	(level (get-player-level dungeon))
 	)
     (clear-console console)
-;    (update-console console)
     (display-copyright console)
+;    (format t "pressed key ~A~%" key)
     (cond ((key-eq key +key-q+)
 	   (setf res 'end))
 	  ((key-eq key +key-.+)
@@ -216,32 +224,73 @@
 	  ((key-eq key +key-n+)
 	   (move-player console dungeon 7))
 	  ((key-eq key +key-<+)
-	   (move-player-down console dungeon))
-	  ((key-eq key +key->+)
-	   (move-player-up console dungeon))
+	   (format t "key < pressed~%")
+	   (move-player-down console dungeon)
+	   (setf level (get-player-level dungeon))
+	   )
+	  ((or (key-eq key +key->+)
+	       ;; horrible hack: on my international keyboard
+	       ;; ">" (Alt Gr Y) is detected as "Z"
+	       (key-eq key +key-z+))
+	   (format t "key > pressed~%")
+	   (setf res (move-player-up console dungeon)
+		 level (get-player-level dungeon)
+		 ))
 	  )
     (update-level level)
     (draw-level console level)
     (draw-player console player)
     (update-console console)
+    (when (not (player-alive player))
+      (setf res 'death))
     res))
 
-(defun player-idle-turn (console dungeon)
-  (let ((player (dungeon-player dungeon))
-	(level (get-player-level dungeon)))
-   )
+(defun move-player-up/down (console dungeon typeid ud)
+  (let* ((level (get-player-level dungeon))
+	 (player (dungeon-player dungeon))
+	 (f (is-object-at (lifeform-x player) (lifeform-y player)
+			  (level-features level))))
+    (when (and f (equal typeid (object-typeid f)))
+      (return-from move-player-up/down
+	(switch-level console dungeon (object-state f) ud)))
+    )
+  'indungeon
   )
 
-(defun move-player-down (console dungeon))
+(defun move-player-up (console dungeon)
+  (move-player-up/down console dungeon ">" 'up)
+  )
 
-(defun move-player-up (console dungeon))
+(defun move-player-down (console dungeon)
+  (move-player-up/down console dungeon "<" 'down)
+  )
+
+(defun switch-level (console dungeon n ud)
+  (cond ((not (equal n 'end))
+	 (spawn-player (dungeon-player dungeon) dungeon n ud)
+	 (welcome-to-level console (get-player-level dungeon))
+	 'indungeon
+	 )
+	(t
+	 (format t "exiting the dungeon~%")
+	 'end)
+	)
+  )
 
 (defun display-help (console))
 
 (defun do-death (console dungeon)
+  (clear-console console)
+
+  (display-copyright console)
+  (update-console console)
   'end)
 
 (defun do-win (console dungeon)
+  (clear-console console)
+
+  (display-copyright console)
+  (update-console console)
   'end)
 
 (defun update-idle-player (player)

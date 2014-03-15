@@ -35,11 +35,12 @@
 				 mp)))))
     res))
 
-(defun gen-monsters* (&key leveldata map features items typeid (cnt 1))
+(defun gen-monsters* (&key leveldata map features items typeid (cnt 1) (sickprob 0))
   (let ((res ()))
     (dotimes (i cnt res)
       (let ((md (gethash typeid *monsterdata*))
 	    (kord (find-kord-for-monster leveldata map features items res))
+	    (sick (<= (get-rnd-number 0 100) sickprob))
 	    )
 	(cond (md
 	       (setf res (append res
@@ -47,7 +48,7 @@
 				   :name (monsterdata-name md)
 				   :typeid typeid
 				   :x (car kord) :y (cdr kord)
-				   :state 'alive
+				   :state (if sick 'sick 'alive)
 				   :thinkfunc #'monster-think
 				   :turns 0
 				   :role (monsterdata-rel md)
@@ -80,20 +81,39 @@
 (defun monster-think (msg)
   (declare (ignore msg)))
 
-(defun damage-monster (console monsta dmg)
+(defun damage-monster (level monsta dmg)
   (cond ((>= dmg (lifeform-hp monsta))
 	 (setf (lifeform-hp monsta) 0
-	       (lifeform-state monsta) 'dead)
-	 (add-msg console (format nil "The ~A dies." (lifeform-name monsta)))
-	 )
+	       (lifeform-state monsta) 
+	       (if (equal (lifeform-state monsta) 'sick) 'sick-dead 'dead))
+	 (deadmonster-to-corpse level monsta)
+	 (add-msg (format nil "The ~A dies." (lifeform-name monsta)))
+ )
 	(t
 	 (decf (lifeform-hp monsta) dmg)
-	 (when (<= (lifeform-hp monsta) (/ (lifeform-maxhp monsta) 2))
-	   (add-msg console (format nil "The ~A is heavily wounded." 
+	 (when (<= (lifeform-hp monsta) (/ (lifeform-maxhp monsta) 3))
+	   (add-msg (format nil "The ~A is heavily wounded." 
 				    (lifeform-name monsta))))
 	 )
 	)
   )
 
 (defun monsta-alive (monsta)
-  (equal (lifeform-state monsta) 'dead))
+  (not (or (equal (lifeform-state monsta) 'dead) (equal (lifeform-state monsta) 'sick-dead))))
+
+(defun deadmonster-to-corpse (level monsta)
+  (setf 
+   (level-monsters level) 
+   (delete monsta (level-monsters level))
+   (level-items level) 
+   (nconc (level-items level)
+	  (list (make-objectwithrole
+		 :name (format nil "~A corpse" (lifeform-name monsta))
+		 :typeid (if (equal 'sick-dead (lifeform-state monsta))
+			     "%sc" "%c")
+		 :aktlevel 0
+		 :x (lifeform-x monsta)
+		 :y (lifeform-y monsta)
+		 :state 'dead
+		 :role "corpse"
+		 :xp (floor (/ (lifeform-xp monsta) 2)))))))

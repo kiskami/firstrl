@@ -54,6 +54,7 @@ Source code is at https://code.google.com/p/firstrl/")
 (defparameter +WHITE-COLOR+ sdl:*white*)
 (defparameter +GRAY-COLOR+ (sdl:color :r 170 :g 170 :b 170 :a 1))
 (defparameter +DEFCOLOR+ +WHITE-COLOR+)
+(defparameter +CORPSECOLOR+ +GRAY-COLOR+)
 
 (defparameter *RNDSTATE* nil)
 

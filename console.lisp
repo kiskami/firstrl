@@ -33,6 +33,7 @@
 (defconstant +key-q+ :SDL-KEY-Q)
 (defconstant +key-u+ :SDL-KEY-U)
 (defconstant +key-y+ :SDL-KEY-Y)
+(defconstant +key-z+ :SDL-KEY-Z)
 
 (defconstant +key-space+ :SDL-KEY-SPACE)
 (defconstant +key-<+ :SDL-KEY-LESS)
@@ -142,6 +143,28 @@
 			 :color color)))
 
 (defun display-text-wrapped (console x y w h text &key (font 'sans) (color +DEFCOLOR+))
+  "Display text in the rectangular region [(x,y)(x+w,y+h)] with simple line wrapping."
+  (let* ((line "") 
+	 (f (get-font font))
+	 (font-line-skip (sdl:get-font-line-skip :font f))
+	 (liney (* y font-line-skip)))
+    (labels ((dt (x y tx fo s) (display-text-on-surf x y tx :font fo :surf s :color color)))
+     (dolist (word (split-by text))
+       (cond ((> (sdl:get-font-size (format nil "~A ~A" line word) :size :W :font f) (* w +TILESIZE+))
+	      ;; sor kiírása
+;	     (format t "display text: x:~A liney:~A line:~A~%" (* x +TILESIZE+) liney line)
+	      (dt (* x +TILESIZE+) liney line font (consoledata-windowsurf console))
+	      ;; új sor kell
+	      (incf liney font-line-skip)
+	      (setf line word)
+	      (if (> liney (* (+ y h) font-line-skip)) (return-from display-text-wrapped)))
+	     (t
+;	     (format t "adding to line, line:~A word:~A~%" line word)
+	      (setf line (format nil "~A ~A" line word)))))
+     ;; utolsó sort még ki kell írni
+     (dt (* x +TILESIZE+) liney line font (consoledata-windowsurf console)))))
+
+(defun display-text-wrapped_ (console x y w h text &key (font 'sans) (color +DEFCOLOR+))
   "Display text in the rectangular region [(x,y)(x+w,y+h)] with simple line wrapping."
   (let* ((line "") 
 	 (f (get-font font))

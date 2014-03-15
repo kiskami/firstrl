@@ -1,4 +1,4 @@
-;;; msgwindow.lisp
+;;; items.lisp
 ;; Copyright (c) 2014 Kalman Kiss, Zalaegerszeg Hungary
 ;;
 ;; This program is free software; you can redistribute it and/or modify
@@ -21,14 +21,3 @@
 ;; Kakukkfu u. 4.
 
 (in-package #:firstrl)
-
-(defparameter *msgwindow* ())
-
-(defun add-msg (msg)
-;  (display-text-wrapped console 1 27 (- (consoledata-w console) 2) 2 msg)
-  (when (> (length *msgwindow*) 4) (pop *msgwindow*))
-  (setf *msgwindow* (nconc *msgwindow* (list msg))))
-
-(defun display-msg-window (console x y)
-  (dotimes (i (length *msgwindow*))
-    (display-text console x (+ i y) (nth i *msgwindow*))))
