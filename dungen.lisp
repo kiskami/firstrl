@@ -65,8 +65,6 @@
     
     result))
 
-(defun gen-items (leveldata map features))
-
 (defun get-dungeonfeaturedata (typeid)
   (gethash typeid *dungeonfeaturedata*))
 
@@ -83,7 +81,7 @@
 		  (setf kord (cons x y))
 		  (return)))
 	   (when kord (return))))
-    (format t "lateral-kord ~A~%" kord)
+;    (format t "lateral-kord ~A~%" kord)
     (setf res (append res (list kord)))
     res)
   )

@@ -118,35 +118,24 @@
 
 (defun do-chargen (console)
   "Player character generation."
-  (make-lifeform
-   :name "AXCSDAVF ASRF"
-   :typeid "@"
-   :aktlevel 0
-   :state 'alive
-   :turns 0
-   
-   :role 'scamp
-   :hp 10 :maxhp 10
-   :power 1 :maxpower 1
-   :str 1 :maxstr 1
-   :dex 1 :maxdex 1
-   :con 1 :maxcon 1
-   :int 1 :maxint 1
-   :wis 1 :maxwis 1
-   :cha 1 :maxcha 1
-   
-   :gender 'm
-   :deity 'zumba
-   :armor ()
-   :weapons ()
-   :tools ()
-   :magic ()
-   :alignment 'chaothic-good
-   :xp 0
-   :purse 1
-   :inventory ()
-   :att 1 :def 1 :spe 1
-   ))
+  (let ((c (make-lifeform
+	    :name "AXCSDAVF ASRF" :typeid "@" :aktlevel 0 :state 'alive :turns 0
+	    :role 'scamp
+	    :hp 0 :maxhp 0 :power 1 :maxpower 1
+	    :str 1 :maxstr 1 :dex 1 :maxdex 1
+	    :con 1 :maxcon 1 :int 1 :maxint 1
+	    :wis 1 :maxwis 1 :cha 1 :maxcha 1
+	    :gender 'm :deity 'zumba
+	    :armor ()
+	    :weapons ()
+	    :tools ()
+	    :magic ()
+	    :alignment 'chaothic-good :xp 0 :xplevel -1 
+	    :purse 1 :inventory ()
+	    :att 0 :def 0 :spe 0
+	    )))
+    (advance-player-xp c 0)
+    c))
 
 (defun gen-levels (player)
   "Generate dungeon levels for player."

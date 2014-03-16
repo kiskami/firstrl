@@ -79,7 +79,7 @@
 	    (canstep nil))
 	; monsta? fight!
 	(setf canstep (if (and o (monsta-alive o))
-			  (monsta-fight level console player o) t))
+			  (monsta-fight level player o) t))
 
 	(when canstep
 	  ;; (setf o (is-object-at (car newkords) (cdr newkords)
@@ -103,7 +103,7 @@
     (cons (+ (lifeform-x player) (car d))
 	  (+ (lifeform-y player) (cdr d)))))
 
-(defun monsta-fight (level console player monsta)
+(defun monsta-fight (level player monsta)
 ;  (format t "stepping into a monsta! fight!~%")
   (let ((player-spe (lifeform-spe player))
 	(monsta-spe (lifeform-spe monsta))
@@ -115,11 +115,11 @@
 	       (add-msg "Too slow, you can't attack!"))
 	   (when (monsta-alive monsta) 
 	     (if (> monsta-spe 0)
-		 (monsta-attack console player monsta)
+		 (monsta-attack player monsta)
 		 (add-msg (format nil "The ~A doesn't fight back!" (lifeform-name monsta)))))
 	   )
 	  (t
-	   (monsta-attack console player monsta)
+	   (monsta-attack player monsta)
 	   (when (player-alive player) 
 	     (if (> player-spe 0)
 		 (player-attack level player monsta)
@@ -127,8 +127,29 @@
 	   )	
 	  ))
   (when (not (monsta-alive monsta))
-    (incf (lifeform-xp player) (lifeform-xp monsta)))
+    (advance-player-xp player (lifeform-xp monsta)))
   (and (player-alive player) (not (monsta-alive monsta)))
+  )
+
+(defun advance-player-xp (player dxp)
+  (incf (lifeform-xp player) dxp)
+  (let ((lud (nth (1+ (lifeform-xplevel player)) +LEVELUPDATA+)))
+    (when lud
+      (apply #'(lambda (player &key minxp (att 0) (def 0) (spe 0) (hp 0))
+		(when (>= (lifeform-xp player) minxp)
+		  (incf (lifeform-xplevel player))
+		  (incf (lifeform-att player) att)
+		  (incf (lifeform-def player) def)
+		  (incf (lifeform-spe player) spe)
+		  (incf (lifeform-maxhp player) hp)
+		  (setf (lifeform-hp player) (lifeform-maxhp player))
+		  (add-msg 
+		   (format nil
+			   "You become ~:[~;stronger~] ~:[~;ügyesebb~] ~:[~;faster~] ~:[~;healtier~]."
+			   att def spe hp))
+		  (return-from advance-player-xp nil)))
+	    player lud))
+    )
   )
 
 ;; (defun item-pickup (console player item)
@@ -166,7 +187,7 @@
 	    )
       )))
 
-(defun monsta-attack (console player monsta)
+(defun monsta-attack (player monsta)
   (let ((matt (get-rnd-number 0 (lifeform-att monsta)))
 	(pdef (get-rnd-number 0 (lifeform-def player))))
     (when (and (player-alive player) (monsta-alive monsta))
@@ -211,17 +232,25 @@
   (let ((player (dungeon-player dungeon)))
     (dolist (i (lifeform-inventory player))
       (when (zerop (position #\% (object-typeid i)))
-	(let ((dhp (ceiling (/ (objectwithrole-xp i) 2.0))))
-	  (cond ((not (equal (object-typeid i) "%sc"))
+	;; corpses heal/damage half of their xp
+	;; comestibels heal/damage their hp
+	(let* ((dhp (if (equal "%" (object-typeid i))
+			(objectwithrole-hp i)
+			(ceiling (/ (objectwithrole-xp i) 2.0))))
+	       (dhp* (if (zerop dhp) 1 dhp))
+	      )
+	  (cond ((and 
+		  (not (equal (object-typeid i) "%sc"))
+		  (not (equal (object-state i) 'sick)))
 		 (add-msg (format nil "You eat a ~A, it heals you ~A hp."
-				  (object-name i) dhp))
-		 (incf (lifeform-hp player) dhp)
+				  (object-name i) dhp*))
+		 (incf (lifeform-hp player) dhp*)
 		 (when (> (lifeform-hp player) (lifeform-maxhp player))
 		   (setf (lifeform-hp player) (lifeform-maxhp player))))
 		(t
 		 (add-msg (format nil "Eeeee. You eat a ~A and it damages you ~A hp."
-			   (object-name i) dhp))
-		 (damage-player player dhp))
+			   (object-name i) dhp*))
+		 (damage-player player dhp*))
 		)
 	  (setf (lifeform-inventory player)
 		(delete i (lifeform-inventory player)))

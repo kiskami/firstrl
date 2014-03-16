@@ -81,10 +81,10 @@
 				 (:id chaotic :desc "")))
 
 (defconstant +LEVELUPDATA+ '((:minxp 0 :att 1 :def 1 :spe 1 :hp 10)
-			     (:minxp 42 :att 1 :def 1 :spe 1 :hp 20)
-			     (:minxp 95 :att 2 :def 2 :spe 1 :hp 35)
-			     (:minxp 180 :att 2 :def 3 :spe 2 :hp 55)
-			     (:minxp 252 :att 4 :def 5 :spe 2 :hp 75)
+			     (:minxp 42 :att 0 :def 0 :spe 0 :hp 10)
+			     (:minxp 95 :att 1 :def 1 :spe 0 :hp 15)
+			     (:minxp 180 :att 0 :def 1 :spe 1 :hp 20)
+			     (:minxp 252 :att 2 :def 2 :spe 1 :hp 25)
 			     ))
 
 (defstruct (itemdata (:include basicdata)))
@@ -135,7 +135,7 @@
 		(:typeid "sp" :cnt 3 :sickprob 10) ;9xp
 		(:typeid "k" :cnt 3)	;24xp
 		)
-     :items ()
+     :items ((:typeid "%" :cnt 5 :sickprob 10 :hp 2))
      :features ()
      )
     (:name "antechamber" :w 60 :h 25 :minw 4 :minh 4 :maxw 8 :maxh 8 :parents (0) :childs (2)
@@ -205,6 +205,7 @@
   def 
   spe
   xp
+  xplevel
   )
 
 (defstruct (playerdata (:include basicdata)))
