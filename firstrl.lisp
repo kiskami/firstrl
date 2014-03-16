@@ -203,6 +203,8 @@
 ;    (format t "pressed key ~A~%" key)
     (cond ((key-eq key +key-q+)
 	   (setf res 'end))
+	  ((key-eq key +key-?+)
+	   (help console))
 	  ((key-eq key +key-.+)
 	   (format t ".")
 	   (update-idle-player player))
@@ -223,6 +225,10 @@
 	   (move-player console dungeon 6))
 	  ((key-eq key +key-n+)
 	   (move-player console dungeon 7))
+	  ((key-eq key +key-e+)
+	   (player-eat dungeon))
+	  ((key-eq key +key-comma+)
+	   (player-pickup dungeon))
 	  ((key-eq key +key-<+)
 	   (format t "key < pressed~%")
 	   (move-player-down console dungeon)
@@ -244,6 +250,8 @@
     (when (not (player-alive player))
       (setf res 'death))
     res))
+
+(defun help (console))
 
 (defun move-player-up/down (console dungeon typeid ud)
   (let* ((level (get-player-level dungeon))
@@ -280,6 +288,7 @@
 (defun display-help (console))
 
 (defun do-death (console dungeon)
+  (wait-for-any-key console)
   (clear-console console)
 
   (display-copyright console)

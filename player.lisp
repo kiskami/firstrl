@@ -55,12 +55,12 @@
 				     (lifeform-state player))))
 
 (defun draw-player (console player &key (dx 1) (dy 1) (draw-hud t))
-  (display-text console 0 27 "1")
-  (display-text console 0 28 "2")
-  (display-text console 0 29 "3")
-  (display-text console 0 30 "4")
-  (display-text console 0 31 "5")
-  (display-text console 0 32 "6")
+  ;; (display-text console 0 27 "1")
+  ;; (display-text console 0 28 "2")
+  ;; (display-text console 0 29 "3")
+  ;; (display-text console 0 30 "4")
+  ;; (display-text console 0 31 "5")
+  ;; (display-text console 0 32 "6")
   (display-msg-window console 1 27)
   (when draw-hud
     (display-hud console player))
@@ -82,10 +82,10 @@
 			  (monsta-fight level console player o) t))
 
 	(when canstep
-	  (setf o (is-object-at (car newkords) (cdr newkords)
-				(level-items level)))
-	  ; item? pick up!
-	  (setf canstep (if o (item-pickup console player o) t))
+	  ;; (setf o (is-object-at (car newkords) (cdr newkords)
+	  ;; 			(level-items level)))
+	  ;; ; item? pick up!
+	  ;; (setf canstep (if o (item-pickup console player o) t))
 
 	  (when canstep         
 	    (setf o (is-object-at (car newkords) (cdr newkords)
@@ -126,13 +126,15 @@
 		 (add-msg "Too slow, you can't fight back!")))
 	   )	
 	  ))
+  (when (not (monsta-alive monsta))
+    (incf (lifeform-xp player) (lifeform-xp monsta)))
   (and (player-alive player) (not (monsta-alive monsta)))
   )
 
-(defun item-pickup (console player item)
-  (format t "item pickup.~%")
-  t
-  )
+;; (defun item-pickup (console player item)
+;;   (format t "item pickup.~%")
+;;   t
+;;   )
 
 (defun feature-handle (console player fea)
   (format t "dungeon feature in the way...~%")
@@ -173,7 +175,7 @@
 	     (add-msg (format nil "The ~A hits you, and wound ~A hp."
 			       (lifeform-name monsta)
 			       (- matt pdef)))
-	     (damage-player console player (- matt pdef))
+	     (damage-player player (- matt pdef))
 	     )
 	    ((and (> matt 0) (= matt pdef))
 	     (add-msg (format nil "You ward off the attack of the ~A barely."
@@ -190,12 +192,11 @@
 	    )
       )))
 
-(defun damage-player (console ply dmg)
+(defun damage-player (ply dmg)
     (cond ((>= dmg (lifeform-hp ply))
 	 (setf (lifeform-hp ply) 0
 	       (lifeform-state ply) 'dead)
 	   (add-msg (format nil "*** You die from the attack. Press any key to quit. ***"))
-	   (wait-for-any-key console)
 	 )
 	(t
 	 (decf (lifeform-hp ply) dmg)
@@ -205,3 +206,42 @@
 
 (defun player-alive (ply)
   (not (equal (lifeform-state ply) 'dead)))
+
+(defun player-eat (dungeon)
+  (let ((player (dungeon-player dungeon)))
+    (dolist (i (lifeform-inventory player))
+      (when (zerop (position #\% (object-typeid i)))
+	(let ((dhp (ceiling (/ (objectwithrole-xp i) 2.0))))
+	  (cond ((not (equal (object-typeid i) "%sc"))
+		 (add-msg (format nil "You eat a ~A, it heals you ~A hp."
+				  (object-name i) dhp))
+		 (incf (lifeform-hp player) dhp)
+		 (when (> (lifeform-hp player) (lifeform-maxhp player))
+		   (setf (lifeform-hp player) (lifeform-maxhp player))))
+		(t
+		 (add-msg (format nil "Eeeee. You eat a ~A and it damages you ~A hp."
+			   (object-name i) dhp))
+		 (damage-player player dhp))
+		)
+	  (setf (lifeform-inventory player)
+		(delete i (lifeform-inventory player)))
+	  (return-from player-eat))))
+    (add-msg "No comestible in inventory!"))
+  )
+
+(defun player-pickup (dungeon)
+  (let* ((level (get-player-level dungeon))
+	 (player (dungeon-player dungeon))
+	 (o (is-object-at (lifeform-x player) (lifeform-y player)
+			(level-items level))))
+    (cond (o
+	   (add-msg (format nil "You pick up the ~A." (object-name o)))
+	   (setf (lifeform-inventory player)
+		 (append (lifeform-inventory player)
+			 (list o))
+		 (level-items level)
+		 (delete o (level-items level))))
+	  (t 
+	   (add-msg "There is nothing here to pickup!")))
+    )
+  )

@@ -39,11 +39,13 @@
   (let ((res ()))
     (dotimes (i cnt res)
       (let ((md (gethash typeid *monsterdata*))
-	    (kord (find-kord-for-monster leveldata map features items res))
+	    (kord nil)
 	    (sick (<= (get-rnd-number 0 100) sickprob))
 	    )
 	(cond (md
-	       (setf res (append res
+	       (setf 
+		kord (find-kord-for-monster leveldata map features items res)
+		res (append res
 				 (list (make-lifeform
 				   :name (monsterdata-name md)
 				   :typeid typeid
