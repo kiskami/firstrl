@@ -143,12 +143,13 @@
 		  (incf (lifeform-spe player) spe)
 		  (incf (lifeform-maxhp player) hp)
 		  (setf (lifeform-hp player) (lifeform-maxhp player))
-		  (add-msg 
-		   (format nil
-			   "You become ~:[~;stronger~] ~:[~;ügyesebb~] ~:[~;faster~] ~:[~;healtier~]."
-			   att def spe hp))
+		  (when (not (zerop (lifeform-xplevel player))) 
+		    (add-msg 
+		     (format nil
+			     "You became ~:[~;stronger~] ~:[~;slicker~] ~:[~;faster~] ~:[~;healtier~]."
+			     att def spe hp)))
 		  (return-from advance-player-xp nil)))
-	    player lud))
+	     player lud))
     )
   )
 
@@ -217,7 +218,6 @@
     (cond ((>= dmg (lifeform-hp ply))
 	 (setf (lifeform-hp ply) 0
 	       (lifeform-state ply) 'dead)
-	   (add-msg (format nil "*** You die from the attack. Press any key to quit. ***"))
 	 )
 	(t
 	 (decf (lifeform-hp ply) dmg)

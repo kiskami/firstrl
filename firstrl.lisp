@@ -41,14 +41,14 @@
 				    :levels (gen-levels player)))
 		     (spawn-player player dungeon)
 		     (display-copyright console)
-		     (draw-level console (get-player-level dungeon))
+		     (draw-level console (get-player-level dungeon) player)
 		     (welcome-to-level console (get-player-level dungeon))
 		     (draw-player console player)
 		     (update-console console))
 		    'indungeon)
 		   ('indungeon
-		    (format t "in dungeon...~A~%" 
-			    (lifeform-turns (dungeon-player dungeon)))
+		    ;; (format t "in dungeon...~A~%" 
+		    ;; 	    (lifeform-turns (dungeon-player dungeon)))
 		    (do-update-dungeon console dungeon))
 		   ('death
 		    (format t "death...~%")
@@ -161,7 +161,9 @@
      :features f
      :items i
      :monsters m
-     :map map)))
+     :map map
+     :mapmask (make-array (array-dimensions map) :element-type 'character :initial-element #\0)
+     )))
 
 (defun spawn-player (player dungeon &optional (level 0) (ud 'down))
   "Place player on the level in dungeon by the ladder upwards (entry)."
@@ -179,7 +181,7 @@
 
 (defun welcome-to-level (console level)
   (add-msg (format nil "Welcome to the ~A!" (level-name level)))
-  (display-msg-window console 1 27))
+  (display-msg-window console +MSGWIND-X+ +MSGWIND-Y+))
 
 (defun do-update-dungeon (console dungeon)
   (let ((key (wait-for-any-key console))
@@ -195,7 +197,7 @@
 	  ((key-eq key +key-?+)
 	   (help console))
 	  ((key-eq key +key-.+)
-	   (format t ".")
+;	   (format t ".")
 	   (update-idle-player player))
 	  ;; player movement input
 	  ((key-eq key +key-y+)
@@ -219,7 +221,7 @@
 	  ((key-eq key +key-comma+)
 	   (player-pickup dungeon))
 	  ((key-eq key +key-<+)
-	   (format t "key < pressed~%")
+;	   (format t "key < pressed~%")
 	   (move-player-down console dungeon)
 	   (setf level (get-player-level dungeon))
 	   )
@@ -227,17 +229,21 @@
 	       ;; horrible hack: on my international keyboard
 	       ;; ">" (Alt Gr Y) is detected as "Z"
 	       (key-eq key +key-z+))
-	   (format t "key > pressed~%")
+;	   (format t "key > pressed~%")
 	   (setf res (move-player-up console dungeon)
 		 level (get-player-level dungeon)
 		 ))
 	  )
     (update-level level)
-    (draw-level console level)
+    (draw-level console level player)
     (draw-player console player)
     (update-console console)
     (when (not (player-alive player))
       (setf res 'death))
+    ;; last levels last monster dead - you WON
+    (when (not (monsta-alive
+		(first (last (level-monsters (first (last (dungeon-levels dungeon))))))))
+      (setf res 'win))
     res))
 
 (defun help (console))
@@ -277,18 +283,26 @@
 (defun display-help (console))
 
 (defun do-death (console dungeon)
-  (wait-for-any-key console)
-  (clear-console console)
-
-  (display-copyright console)
+  (add-msg (format nil "*** You DIEd. Embarassing. Press any key to quit. ***"))
+  (let ((player (dungeon-player dungeon))
+	(level (get-player-level dungeon)))
+    (clear-console console)
+    (draw-level console level player)
+    (draw-player console player))
   (update-console console)
+  (wait-for-any-key console)
   'end)
 
 (defun do-win (console dungeon)
-  (clear-console console)
-
-  (display-copyright console)
+  (add-msg (format nil "*** You WON. Is this even possible? Embarassing. ***"))
+  (add-msg "Press any key to quit.")
+  (let ((player (dungeon-player dungeon))
+	(level (get-player-level dungeon)))
+    (clear-console console)
+    (draw-level console level player)
+    (draw-player console player))
   (update-console console)
+  (wait-for-any-key console)
   'end)
 
 (defun update-idle-player (player)
@@ -297,36 +311,64 @@
 (defun update-level (level)
   (dolist (m (level-monsters level))
     (when (lifeform-thinkfunc m)
-      (funcall (lifeform-thinkfunc m) 'update)))
+      (funcall (lifeform-thinkfunc m) m 'update)))
   (dolist (i (level-items level))
     (when (object-thinkfunc i)
-      (funcall (object-thinkfunc i) 'update)))
+      (funcall (object-thinkfunc i) i 'update)))
   )
 
-(defun draw-level (console level)
-  (draw-map console (level-map level))
-  (draw-features console (level-features level))
-  (draw-items console (level-items level))
-  (draw-monsters console (level-monsters level)))
+(defun draw-level (console level player)
+  (let ((px (lifeform-x player))
+	(py (lifeform-y player)))
+    (draw-map console (level-map level) (level-mapmask level) px py)
+    (draw-features console (level-features level) px py)
+    (draw-items console (level-items level) px py)
+    (draw-monsters console (level-monsters level) px py)))
 
-(defun draw-map (console map &key (dx 1) (dy 1))
+(defun draw-map_ (console map px py &key (dx 1) (dy 1) (eyeshot 2))
+  (dolist (kord (if (> eyeshot 1) (append dkords dkords2) dkords))
+    (let ((x (+ px (car kord)))
+	  (y (+ py (cdr kord))))
+      (when (and 
+	     (>= x 0) (>= y 0)
+	     (<= x (1- (array-dimension map 0))) (<= y (1- (array-dimension map 1)))
+	     (not (eq #\Space (aref map x y)))
+	     )
+	(display-char-glyp console (+ x dx) (+ y dy) (string (aref map x y))))))
+  )
+
+(defun draw-map (console map mapmask px py &key (dx 1) (dy 1) (eyeshot 2)) 
   (loop for y from 0 to (1- (array-dimension map 1))
      do (loop for x from 0 to (1- (array-dimension map 0))
-	   do (when (not (eq #\Space (aref map x y)))
+	   do (when (and 
+		     (or (equal #\1 (aref mapmask x y)) 
+			 (within-eyeshot px py eyeshot x y)) 
+		     (not (eq #\Space (aref map x y))))
+		(setf (aref mapmask x y) #\1)
 		(display-char-glyp console (+ x dx) (+ y dy) (string (aref map x y)))
 		))))
 
- (defun draw-items (console items &key (dx 1) (dy 1))
-   (dolist (i items)
-     (display-char-glyp console (+ dx (object-x i)) (+ dy (object-y i))
-		   (string (itemdata-char (gethash (object-typeid i) *itemdata*))))))
+(defun draw-items (console items px py &key (dx 1) (dy 1) (eyeshot 2))
+  (dolist (i items)
+    (when (within-eyeshot px py eyeshot (object-x i) (object-y i))
+      (display-char-glyp console (+ dx (object-x i)) (+ dy (object-y i))
+			 (string (itemdata-char (gethash (object-typeid i) *itemdata*)))))))
 
-(defun draw-monsters (console monstas &key (dx 1) (dy 1))
+(defun draw-monsters (console monstas px py &key (dx 1) (dy 1) (eyeshot 2))
   (dolist (m monstas)
-    (display-char-glyp console (+ dx (object-x m)) (+ dy (object-y m)) 
-		       (string (monsterdata-char (gethash (object-typeid m) *monsterdata*))))))
+    (when (within-eyeshot px py eyeshot (object-x m) (object-y m))
+      (display-char-glyp console (+ dx (object-x m)) (+ dy (object-y m))
+			 (string (monsterdata-char (gethash (object-typeid m) *monsterdata*)))))))
 
-(defun draw-features (console features &key (dx 1) (dy 1))
+(defun draw-features (console features px py &key (dx 1) (dy 1) (eyeshot 2))
   (dolist (f features)
-    (display-char-glyp console (+ dx (object-x f)) (+ dy (object-y f)) 
-		       (string (dungeonfeaturedata-char (gethash (object-typeid f) *dungeonfeaturedata*))))))
+    (when (within-eyeshot px py eyeshot (object-x f) (object-y f))
+      (display-char-glyp console (+ dx (object-x f)) (+ dy (object-y f))
+			 (string (dungeonfeaturedata-char (gethash (object-typeid f) *dungeonfeaturedata*)))))))
+
+(defun within-eyeshot (px py eyeshot ox oy)
+  (dolist (kord (if (> eyeshot 1) (append dkords dkords2) dkords))
+    (when (and (= ox (+ px (car kord)))
+	       (= oy (+ py (cdr kord))))
+      (return-from within-eyeshot t)))
+  nil)

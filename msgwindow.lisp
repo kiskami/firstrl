@@ -26,7 +26,7 @@
 
 (defun add-msg (msg)
 ;  (display-text-wrapped console 1 27 (- (consoledata-w console) 2) 2 msg)
-  (when (> (length *msgwindow*) 4) (pop *msgwindow*))
+  (when (> (length *msgwindow*) +MSGWIND-H+) (pop *msgwindow*))
   (setf *msgwindow* (nconc *msgwindow* (list msg))))
 
 (defun display-msg-window (console x y)

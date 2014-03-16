@@ -81,9 +81,9 @@
 				 (:id chaotic :desc "")))
 
 (defconstant +LEVELUPDATA+ '((:minxp 0 :att 1 :def 1 :spe 1 :hp 10)
-			     (:minxp 42 :att 0 :def 0 :spe 0 :hp 10)
-			     (:minxp 95 :att 1 :def 1 :spe 0 :hp 15)
-			     (:minxp 180 :att 0 :def 1 :spe 1 :hp 20)
+			     (:minxp 26 :att 0 :def 0 :spe 0 :hp 10)
+			     (:minxp 60 :att 1 :def 1 :spe 0 :hp 15)
+			     (:minxp 112 :att 0 :def 1 :spe 1 :hp 20)
 			     (:minxp 252 :att 2 :def 2 :spe 1 :hp 25)
 			     ))
 
@@ -143,40 +143,40 @@
 		(:typeid "sc" :cnt 10 :sickprob 20) ;20xp
 		(:typeid "ss" :cnt 2 :sickprob 100) ;6xp
 		(:typeid "w" :cnt 5 :sickprob 5) ;10xp
-		(:typeid "k" :cnt 2 :sickprob 0) ;16xp
+		(:typeid "k" :cnt 2 :sickprob 0 :name "flunky") ;16xp
 		)
-     :items ()     
+     :items ((:typeid "%" :cnt 5 :sickprob 10 :hp 3))     
      :features ()
      )
     (:name "kitchen" :w 70 :h 25 :minw 5 :minh 5 :maxw 10 :maxh 8 :parents (1) :childs (3)
      :monsters ((:typeid "sp" :cnt 5 :sickprob 10) ;15xp
 		(:typeid "B" :cnt 5 :sickprob 10) ;20xp
 		(:typeid "k" :cnt 5 :sickprob 30) ;40xp
-		(:typeid "o" :cnt 2 :sickprob 50) ;20xp
-		(:typeid "h" :cnt 1 :sickprob 10) ;12xp
+		(:typeid "o" :cnt 2 :sickprob 50 :name "Slushy") ;20xp
+		(:typeid "h" :cnt 1 :sickprob 10 :name "Cook") ;12xp
 		)
-     :items ()
+     :items ((:typeid "%" :cnt 5 :sickprob 10 :hp 5))
      :features ()
      )
     (:name "larder" :w 80 :h 25 :minw 6 :minh 6 :maxw 12 :maxh 8 :parents (2) :childs (4)
      :monsters ((:typeid "rr" :cnt 5 :sickprob 50) ;5xp
 		(:typeid "w" :cnt 8 :sickprob 5) ;16xp
-		(:typeid "k" :cnt 1 :sickprob 30) ;8xp
+		(:typeid "k" :cnt 1 :sickprob 30 :name "Captn Koby") ;8xp
 		(:typeid "o" :cnt 2 :sickprob 40) ;20xp
 		(:typeid "G" :cnt 3 :sickprob 30) ;42xp
 		)
-     :items ()
+     :items ((:typeid "%" :cnt 5 :sickprob 10 :hp 6))
      :features ()
      )
     (:name "toilet" :w 80 :h 25 :minw 6 :minh 6 :maxw 12 :maxh 8 :parents (3)
      :monsters ((:typeid "k" :cnt 10 :sickprob 25) ;80xp
 		(:typeid "o" :cnt 5 :sickprob 40) ;50xp
 		(:typeid "G" :cnt 2 :sickprob 30) ;28xp
-		(:typeid "O" :cnt 1 :sickprob 100) ;20xp
-		(:typeid "@*" :cnt 1 :sickprob 100) ;50xp
-		(:typeid "&" :cnt 1 :sickprob 100) ;70xp
+		(:typeid "O" :cnt 1 :sickprob 100 :name "Big @ss Ogre") ;20xp
+		(:typeid "@*" :cnt 1 :sickprob 100 :name "Da ENEMY") ;50xp
+		(:typeid "&" :cnt 1 :sickprob 100 :name "Da enemy's best friend") ;70xp
 		)
-     :items ()
+     :items ((:typeid "%" :cnt 8 :sickprob 0 :hp 15))
      :features ()
      )
     )
@@ -243,6 +243,7 @@
   items
   features
   map
+  mapmask
   )
 
 (defstruct dungeon
@@ -252,6 +253,18 @@
 (defparameter dkords '((-1 . -1) (0 . -1) (1 . -1)
 		       (-1 . 0)  (1 . 0)
 		       (-1 . 1)  (0 . 1)  (1 . 1)))
+
+;     22222
+;     21112
+;     21@12
+;     21112
+;     22222
+
+(defparameter dkords2 '((-2 . -2) (-1 . -2) (0 . -2) (1 . -2) (2 . -2)
+			(-2 . -1) (2 . -1)
+			(-2 . 0)  (2 . 0)
+			(-2 . 1)  (2 . 1)
+			(-2 . 2)  (-1 . 2) (0 . 2) (1 . 2) (2 . 2)))
 
 ;-------------------------------------------------------------------------------|
 (defconstant +TESTLEVEL+

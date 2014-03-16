@@ -35,7 +35,9 @@
 				 mp)))))
     res))
 
-(defun gen-monsters* (&key leveldata map features items typeid (cnt 1) (sickprob 0))
+(defun gen-monsters* (&key leveldata map features items 
+			typeid (cnt 1) (sickprob 0) 
+			(name nil) (hp nil) (att nil) (def nil) (spe nil) (xp nil))
   (let ((res ()))
     (dotimes (i cnt res)
       (let ((md (gethash typeid *monsterdata*))
@@ -47,19 +49,19 @@
 		kord (find-kord-for-monster leveldata map features items res)
 		res (append res
 				 (list (make-lifeform
-				   :name (monsterdata-name md)
+				   :name (if name name (monsterdata-name md))
 				   :typeid typeid
 				   :x (car kord) :y (cdr kord)
 				   :state (if sick 'sick 'alive)
 				   :thinkfunc #'monster-think
 				   :turns 0
 				   :role (monsterdata-rel md)
-				   :hp (monsterdata-hp md)
-				   :maxhp (monsterdata-hp md)
-				   :att (monsterdata-att md)
-				   :def (monsterdata-def md)
-				   :spe (monsterdata-spe md)
-				   :xp (monsterdata-xp md)
+				   :hp (if hp hp (monsterdata-hp md))
+				   :maxhp (if hp hp (monsterdata-hp md))
+				   :att (if att att (monsterdata-att md))
+				   :def (if def def (monsterdata-def md))
+				   :spe (if spe spe (monsterdata-spe md))
+				   :xp (if xp xp (monsterdata-xp md))
 				   :alignment (monsterdata-rel md)))))
 	       )
 	      (t
@@ -80,8 +82,11 @@
     ;empty
     ))
 
-(defun monster-think (msg)
-  (declare (ignore msg)))
+(defun monster-think (monsta msg)
+  (cond ((equal 'update msg)
+	 (when (equal (lifeform-alignment monsta) 'angry)
+	   (when (>= 2 (get-rnd-number 0 100)) 
+	       (add-msg (format nil "You hear some ~A noises." (lifeform-name monsta))))))))
 
 (defun damage-monster (level monsta dmg)
   (cond ((>= dmg (lifeform-hp monsta))

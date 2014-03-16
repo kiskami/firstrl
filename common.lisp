@@ -50,6 +50,10 @@ Source code is at https://code.google.com/p/firstrl/")
 (defconstant +WINDOW-W+ 80 "Game window width in characters (tiles)")
 (defconstant +WINDOW-H+ 40 "Game window height in characters (tiles)")
 
+(defconstant +MSGWIND-X+ 1)
+(defconstant +MSGWIND-Y+ 27)
+(defconstant +MSGWIND-H+ 4)
+
 (defparameter +BLACK-COLOR+ sdl:*black*)
 (defparameter +WHITE-COLOR+ sdl:*white*)
 (defparameter +GRAY-COLOR+ (sdl:color :r 170 :g 170 :b 170 :a 1))

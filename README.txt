@@ -1,7 +1,34 @@
-Firstrl is my first attempt to write a simple roguelike in Common Lisp 
+Firstrl is my first attempt to write a simple roguelike in Common Lisp
+for the 7DRL Challenge (see http://7drl.org/).
+
+You should be able to run it on any 32/64 bit Windows 7+ machine.
+Linux executable maybe later, please check the download site below!
+
+Story
+-----
+
+Its short and usual. You enter a dungeon of some old and ugly 
+dude, because you are a hero, you want his money, girl, ... 
+You get the idea. RNG is offal.
+
+Controls
+--------
+
+  y  k  u  ykuhlbjn - movement, attack
+   \ | /          . - wait a turn
+  h- . -l         , - pickup
+   / | \          e - eat something you picked up
+  b  j  n         < - go down next level
+                  > - go up (ehh)
+		  q - exit immediately
+Downloads
+---------
 
 Source code is at https://code.google.com/p/firstrl/
-Binary package is available for download from <tba>
+Binary package is available for download from the same place.
+
+License and Copyright
+---------------------
 
 firstrl
 Copyright (c) 2014 Kalman Kiss, Zalaegerszeg Hungary

@@ -32,7 +32,9 @@
     res))
 
 (defun gen-items* (ld m fea &key typeid cnt (sickprob 0) 
-			     (hp 0) (att 0) (def 0) (spe 0) (xp 0))
+			      (hp 0) (att 0) (def 0) (spe 0) (xp 0)
+			      (turns 0) (name nil)
+			      )
   (let ((res ()))
     (dotimes (i cnt res)
       (let ((id (gethash typeid *itemdata*))
@@ -43,14 +45,14 @@
 		res (append res
 			    (list
 			     (make-objectwithrole 
-			      :name (itemdata-name id)
+			      :name (if name name (itemdata-name id))
 			      :typeid typeid
 			      :x (car kord)
 			      :y (cdr kord)
 			      :state (if (>= sickprob (get-rnd-number 0 100))
 					 'sick 'normal)
-			      :hp hp :att att :def def :spe spe :xp xp)
-			     ))))
+			      :hp hp :att att :def def :spe spe :xp xp
+			      :turns turns)))))
 	      (t
 	       (error "Itemdata not found.")))
 	)
